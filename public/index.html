@@ -1,0 +1,2415 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>حُرّاس المياه – ابتكري الحل | منصة تعليمية تفاعلية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #0288D1;
+      --primary-dark: #01579B;
+      --primary-light: #E1F5FE;
+      --green: #2E7D32;
+      --green-light: #4CAF50;
+      --green-pale: #E8F5E9;
+      --accent: #00B0FF;
+      --text-main: #1A237E;
+      --text-body: #37474F;
+      --text-muted: #78909C;
+      --bg-gradient: linear-gradient(135deg, #E0F7FA 0%, #E8F5E9 50%, #F1F8E9 100%);
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --card-shadow: 0 10px 30px rgba(2, 136, 209, 0.1);
+      --card-border: 1px solid rgba(255, 255, 255, 0.8);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 30px;
+      --font-main: 'Tajawal', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-main);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* خلفية قطرات المياه التفاعلية العائمة */
+    .water-bg-drops {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .floating-drop {
+      position: absolute;
+      bottom: -40px;
+      user-select: none;
+      opacity: 0.35;
+      animation: floatUp 12s linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) rotate(0deg) scale(0.8);
+        opacity: 0.1;
+      }
+      50% {
+        opacity: 0.45;
+      }
+      100% {
+        transform: translateY(-110vh) rotate(360deg) scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    /* الشريط العلوي الدائم (Header) */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid rgba(2, 136, 209, 0.15);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .brand-icon {
+      font-size: 2rem;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .badge-pill {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(2, 136, 209, 0.3);
+    }
+
+    .badge-pill.points {
+      background: #FFF9C4;
+      color: #F57F17;
+      border-color: #FBC02D;
+    }
+
+    .btn-top {
+      background: white;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-top:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    /* شريط تقدم المراحل */
+    .stepper-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 15px auto 0;
+      padding: 0 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      right: 10%;
+      height: 4px;
+      background: #CFD8DC;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+
+    .stepper-progress {
+      position: absolute;
+      top: 50%;
+      right: 10%;
+      height: 4px;
+      background: var(--green-light);
+      transform: translateY(-50%);
+      z-index: 2;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    .step-item {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .step-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #CFD8DC;
+      color: #78909C;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      transition: all 0.3s;
+    }
+
+    .step-item.active .step-circle {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+      box-shadow: 0 0 12px rgba(2, 136, 209, 0.4);
+    }
+
+    .step-item.completed .step-circle {
+      border-color: var(--green-light);
+      background: var(--green-light);
+      color: white;
+    }
+
+    .step-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #78909C;
+      white-space: nowrap;
+    }
+
+    .step-item.active .step-label {
+      color: var(--primary-dark);
+    }
+
+    .step-item.completed .step-label {
+      color: var(--green);
+    }
+
+    /* الحاوية الرئيسية للشاشات */
+    .app-main {
+      flex: 1;
+      width: 100%;
+      max-width: 900px;
+      margin: 20px auto 40px;
+      padding: 0 16px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .app-screen {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .app-screen.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* بطاقات Glassmorphism */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-lg);
+      border: var(--card-border);
+      box-shadow: var(--card-shadow);
+      padding: 30px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #0288D1, #2E7D32, #00B0FF);
+    }
+
+    /* عناصر الشاشة الأولى: الترحيب */
+    .hero-section {
+      text-align: center;
+      padding: 20px 10px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(76, 175, 80, 0.15);
+      color: var(--green);
+      padding: 6px 18px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--primary-dark);
+      margin-bottom: 20px;
+      line-height: 1.3;
+    }
+
+    .hero-message-box {
+      background: #F4FAFD;
+      border-right: 5px solid var(--primary);
+      padding: 22px;
+      border-radius: var(--radius-md);
+      text-align: right;
+      line-height: 1.9;
+      font-size: 1.1rem;
+      color: #263238;
+      margin: 25px 0;
+      box-shadow: 0 4px 15px rgba(2, 136, 209, 0.06);
+    }
+
+    .hero-message-box p {
+      margin-bottom: 14px;
+    }
+
+    .hero-message-box p:last-child {
+      margin-bottom: 0;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .hero-waste-counter {
+      background: linear-gradient(135deg, #E0F2F1, #E8F5E9);
+      border: 2px dashed #81C784;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      font-weight: 700;
+      color: #1B5E20;
+    }
+
+    .waste-number {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #D32F2F;
+    }
+
+    /* الأزرار العامة */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 32px;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0288D1, #01579B);
+      color: white;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #4CAF50, #2E7D32);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #ECEFF1;
+      color: #37474F;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-group-center {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    /* نموذج البيانات السريعة للطالبة */
+    .student-info-form {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      border: 1px solid #E0E0E0;
+      margin-top: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: right;
+    }
+
+    .form-label {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid #CFD8DC;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border 0.2s;
+      background: #FAFAFA;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(2, 136, 209, 0.15);
+    }
+
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    /* المرحلة الأولى: الأسئلة التفاعلية */
+    .quiz-container {
+      position: relative;
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #ECEFF1;
+    }
+
+    .quiz-progress-text {
+      font-weight: 800;
+      color: var(--primary-dark);
+      font-size: 1.1rem;
+    }
+
+    .question-card {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      margin-bottom: 20px;
+    }
+
+    .question-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .badge-multiple { background: #E1F5FE; color: #0288D1; }
+    .badge-truefalse { background: #E8F5E9; color: #2E7D32; }
+    .badge-scenario { background: #FFF3E0; color: #E65100; }
+    .badge-image { background: #F3E5F5; color: #7B1FA2; }
+
+    .question-text {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #263238;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .question-visual-box {
+      text-align: center;
+      background: #F4FAFD;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 20px;
+      font-size: 4rem;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-item {
+      background: #F9FAFB;
+      border: 2px solid #E0E0E0;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: right;
+    }
+
+    .option-item:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      transform: translateX(-4px);
+    }
+
+    .option-item.selected-correct {
+      background: #E8F5E9 !important;
+      border-color: #2E7D32 !important;
+      color: #1B5E20 !important;
+    }
+
+    .option-item.selected-wrong {
+      background: #FFEBEE !important;
+      border-color: #C62828 !important;
+      color: #B71C1C !important;
+    }
+
+    .option-indicator {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #B0BEC5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .option-item.selected-correct .option-indicator {
+      background: #2E7D32;
+      color: white;
+      border-color: #2E7D32;
+    }
+
+    .option-item.selected-wrong .option-indicator {
+      background: #C62828;
+      color: white;
+      border-color: #C62828;
+    }
+
+    .explanation-box {
+      display: none;
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      animation: fadeIn 0.3s ease;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .explanation-box.correct {
+      display: block;
+      background: #E8F5E9;
+      border-right: 5px solid #2E7D32;
+      color: #1B5E20;
+    }
+
+    .explanation-box.wrong {
+      display: block;
+      background: #FFF3E0;
+      border-right: 5px solid #E65100;
+      color: #BF360C;
+    }
+
+    /* المرحلة الثانية: بطاقات الابتكارات الخمسة */
+    .innovations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .innovation-card {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .innovation-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+      border-color: var(--primary);
+    }
+
+    .inno-icon-box {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+
+    .inno-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 10px;
+    }
+
+    .inno-desc {
+      font-size: 0.95rem;
+      color: var(--text-body);
+      line-height: 1.6;
+      flex-grow: 1;
+      margin-bottom: 16px;
+    }
+
+    .inno-btn {
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* المرحلة الثالثة: ابتكري الحل */
+    .choice-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 650px) {
+      .choice-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .choice-card {
+      background: white;
+      border: 3px solid #CFD8DC;
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .choice-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 10px 25px rgba(2, 136, 209, 0.15);
+    }
+
+    .choice-card.selected {
+      border-color: var(--green);
+      background: #F1F8E9;
+      box-shadow: 0 10px 25px rgba(46, 125, 50, 0.15);
+    }
+
+    .choice-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .choice-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .choice-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* حقول مع المساعد الذكي */
+    .field-with-ai {
+      position: relative;
+    }
+
+    .ai-hint-btn {
+      background: linear-gradient(135deg, #7B1FA2, #512DA8);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      float: left;
+      transition: all 0.2s;
+    }
+
+    .ai-hint-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(123, 31, 162, 0.3);
+    }
+
+    /* لوحة الرسم التفاعلية */
+    .drawing-box {
+      border: 2px dashed #0288D1;
+      border-radius: var(--radius-md);
+      background: white;
+      padding: 15px;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      background: white;
+      border: 1px solid #E0E0E0;
+      border-radius: var(--radius-sm);
+      display: inline-block;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    #drawingCanvas {
+      cursor: crosshair;
+      touch-action: none;
+      background: #FFFFFF;
+    }
+
+    .canvas-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .color-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 0 4px rgba(0,0,0,0.3);
+      transition: transform 0.15s;
+    }
+
+    .color-dot:hover, .color-dot.active {
+      transform: scale(1.25);
+    }
+
+    .canvas-btn {
+      background: #ECEFF1;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .canvas-btn:hover {
+      background: #CFD8DC;
+    }
+
+    /* نافذة المساعد الذكي المنبثقة */
+    .ai-assistant-modal {
+      display: none;
+      position: fixed;
+      bottom: 25px;
+      left: 25px;
+      width: 360px;
+      max-width: 90vw;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+      border: 2px solid #7B1FA2;
+      z-index: 1000;
+      overflow: hidden;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .ai-modal-header {
+      background: linear-gradient(135deg, #7B1FA2, #512DA8);
+      color: white;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 800;
+    }
+
+    .ai-modal-body {
+      padding: 18px;
+      max-height: 350px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #37474F;
+    }
+
+    .ai-modal-close {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    /* المرحلة الرابعة: رسالة النجاح والشهادة */
+    .success-hero {
+      text-align: center;
+      padding: 30px 15px;
+    }
+
+    .success-badge-icon {
+      font-size: 4.5rem;
+      animation: bounce 1.2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .participation-code-box {
+      background: #E8F5E9;
+      border: 2px dashed #4CAF50;
+      padding: 20px;
+      border-radius: var(--radius-md);
+      display: inline-block;
+      margin: 20px 0;
+    }
+
+    .code-text {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #2E7D32;
+      letter-spacing: 2px;
+      direction: ltr;
+      display: inline-block;
+    }
+
+    /* شهادة الإنجاز الرقمية */
+    .certificate-card {
+      background: #FFFFFF;
+      border: 10px solid #0288D1;
+      outline: 4px solid #4CAF50;
+      outline-offset: -7px;
+      border-radius: var(--radius-lg);
+      padding: 35px 25px;
+      text-align: center;
+      margin: 30px auto;
+      position: relative;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.12);
+      max-width: 650px;
+    }
+
+    .cert-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--primary-dark);
+      margin-bottom: 10px;
+    }
+
+    .cert-student-name {
+      font-size: 1.9rem;
+      font-weight: 900;
+      color: #2E7D32;
+      border-bottom: 2px dashed #4CAF50;
+      display: inline-block;
+      padding: 5px 25px;
+      margin: 15px 0;
+    }
+
+    .badges-earned-row {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    .badge-item {
+      background: #F1F8E9;
+      border: 1px solid #81C784;
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #1B5E20;
+    }
+
+    /* النوافذ المنبثقة العامة (Modals) */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 30px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      position: relative;
+      animation: zoomIn 0.25s ease;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #ECEFF1;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* التذييل (Footer) */
+    .app-footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    /* تخصيص للطباعة */
+    @media print {
+      body * { visibility: hidden; }
+      .certificate-card, .certificate-card * { visibility: visible; }
+      .certificate-card {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        max-width: 100%;
+        border-width: 5px;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- خلفية القطرات العائمة -->
+  <div class="water-bg-drops" id="waterDrops"></div>
+
+  <!-- الشريط العلوي الدائم -->
+  <header class="app-header">
+    <div class="header-brand" onclick="goHome()">
+      <div class="brand-icon">💧</div>
+      <div>
+        <div class="brand-title">حُرّاس المياه</div>
+        <div class="brand-subtitle">ابتكري الحل 🌱</div>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <div class="badge-pill points" id="pointsPill">
+        <span>⭐</span>
+        <span id="scoreText">0 نقطة</span>
+      </div>
+      <button class="btn-top" onclick="openLeaderboard()">
+        <span>🏆</span>
+        <span>لوحة الشرف</span>
+      </button>
+      <button class="btn-top" onclick="promptResumeCode()">
+        <span>🔑</span>
+        <span>كود مشاركتي</span>
+      </button>
+      <button class="btn-top" onclick="openStudentQrModal()">
+        <span>📲</span>
+        <span>باركود التحدي</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- شريط تقدم المراحل -->
+  <div class="stepper-container" id="stepperContainer">
+    <div class="stepper">
+      <div class="stepper-progress" id="stepperProgress"></div>
+      
+      <div class="step-item active" id="step1" onclick="navToStep(1)">
+        <div class="step-circle">1</div>
+        <div class="step-label">اكتشفي المشكلة</div>
+      </div>
+
+      <div class="step-item" id="step2" onclick="navToStep(2)">
+        <div class="step-circle">2</div>
+        <div class="step-label">اكتشفي الابتكارات</div>
+      </div>
+
+      <div class="step-item" id="step3" onclick="navToStep(3)">
+        <div class="step-circle">3</div>
+        <div class="step-label">ابتكري الحل</div>
+      </div>
+
+      <div class="step-item" id="step4" onclick="navToStep(4)">
+        <div class="step-circle">4</div>
+        <div class="step-label">إرسال ابتكاري</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- الحاوية الأساسية للشاشات -->
+  <main class="app-main">
+
+    <!-- ==================== الشاشة 1: الترحيب والبداية ==================== -->
+    <div class="app-screen active" id="screen-welcome">
+      <div class="glass-card hero-section">
+        <div class="hero-badge">🌟 منصة تعليمية تفاعلية لريادة الأعمال الخضراء والذكاء الاصطناعي</div>
+        <h1 class="hero-title">حُرّاس المياه – ابتكري الحل 🌊</h1>
+
+        <div class="hero-waste-counter">
+          <span>💧 يُهدر في مدارسنا الآن تقريباً:</span>
+          <span class="waste-number" id="wasteCounter">3,450</span>
+          <span>لتر من الماء النقي!</span>
+        </div>
+
+        <div class="hero-message-box">
+          <p><strong>مرحباً بكِ أيتها المبتكرة!</strong></p>
+          <p>هل تعلمين أن كميات كبيرة من المياه تُهدر يومياً في مدارسنا؟</p>
+          <p>بعض الطالبات يفتحن عبوات المياه ولا يكملنها، وبعضهن يتركن الصنابير مفتوحة، وأحياناً لا تُغلق الصنابير بشكل جيد، مما يؤدي إلى هدر كميات كبيرة من المياه.</p>
+          <p>الماء ثروة ثمينة، وكل قطرة تصنع فرقاً!</p>
+          <p>مهمتكِ اليوم هي اكتشاف المشكلة والتفكير في حلول مبتكرة تساعدنا على بناء مدرسة أكثر استدامة وذكاءً.</p>
+        </div>
+
+        <!-- بيانات الطالبة (اختياري وسهل) -->
+        <div class="student-info-form">
+          <h3 style="margin-bottom: 16px; color: var(--primary-dark);">📝 بياناتكِ أيتها البطلة (لإصدار شهادتكِ):</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">اسمكِ الكريم:</label>
+              <input type="text" id="studentNameInput" class="form-control" placeholder="مثال: سارة الأحمد" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">مدرستكِ:</label>
+              <input type="text" id="studentSchoolInput" class="form-control" placeholder="اسم المدرسة" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">صفكِ الدراسي:</label>
+              <input type="text" id="studentGradeInput" class="form-control" placeholder="مثال: الصف التاسع" />
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group-center">
+          <button class="btn btn-primary" onclick="startChallenge()">
+            <span>🚀 ابدئي التحدي</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== الشاشة 2: المرحلة الأولى (اكتشفي المشكلة) ==================== -->
+    <div class="app-screen" id="screen-stage1">
+      <div class="glass-card quiz-container">
+        <div class="quiz-header">
+          <div>
+            <span class="hero-badge">المرحلة الأولى</span>
+            <h2 style="color: var(--primary-dark); font-size: 1.5rem;">اكتشفي المشكلة 🔍</h2>
+          </div>
+          <div class="quiz-progress-text" id="quizCounterText">السؤال 1 من 6</div>
+        </div>
+
+        <div class="question-card" id="questionCard">
+          <div id="qBadgeContainer"></div>
+          <div class="question-text" id="qText">جاري تحميل الأسئلة...</div>
+
+          <div class="question-visual-box" id="qVisualBox" style="display: none;"></div>
+
+          <div class="options-grid" id="qOptionsList"></div>
+
+          <div class="explanation-box" id="qExplanationBox"></div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+          <button class="btn btn-secondary" onclick="prevQuestion()" id="prevQBtn" style="display: none;">
+            السابق
+          </button>
+          <div style="flex: 1;"></div>
+          <button class="btn btn-primary" onclick="nextQuestion()" id="nextQBtn" style="display: none;">
+            <span>السؤال التالي ←</span>
+          </button>
+          <button class="btn btn-success" onclick="completeQuizStage()" id="finishQBtn" style="display: none;">
+            <span>انتقلي لاكتشاف الابتكارات 🚀</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== الشاشة 3: المرحلة الثانية (اكتشفي الابتكارات) ==================== -->
+    <div class="app-screen" id="screen-stage2">
+      <div class="glass-card">
+        <div style="text-align: center; margin-bottom: 25px;">
+          <span class="hero-badge">المرحلة الثانية</span>
+          <h2 style="color: var(--primary-dark); font-size: 1.8rem; margin-top: 5px;">اكتشفي الابتكارات الذكية 💡</h2>
+          <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 8px;">
+            اضغطي على كل بطاقة لمعرفة كيفية عمل الابتكار والمشكلة التي يعالجها في المدارس
+          </p>
+        </div>
+
+        <div class="innovations-grid" id="innovationsCatalogGrid">
+          <!-- يتم ملؤها ديناميكياً من الخادم -->
+        </div>
+
+        <div class="btn-group-center" style="margin-top: 35px;">
+          <button class="btn btn-success" onclick="goToStage3()">
+            <span>الآن دوركِ – ابتكري الحل الخاص بكِ 🚀</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== الشاشة 4: المرحلة الثالثة (ابتكري الحل) ==================== -->
+    <div class="app-screen" id="screen-stage3">
+      <div class="glass-card">
+        <div style="text-align: center; margin-bottom: 25px;">
+          <span class="hero-badge">المرحلة الثالثة – الأهم 🌟</span>
+          <h2 style="color: var(--primary-dark); font-size: 1.8rem; margin-top: 5px;">ابتكري الحل الأخضر 🌱</h2>
+          <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 8px;">
+            اختاري الطريقة التي تناسبكِ لتقديم حل ترشيد المياه:
+          </p>
+        </div>
+
+        <!-- خيارا المرحلة الثالثة -->
+        <div class="choice-container">
+          <div class="choice-card" id="choiceCardExisting" onclick="selectInnovationChoice('existing')">
+            <div class="choice-icon">🚿</div>
+            <div class="choice-title">الخيار الأول</div>
+            <div class="choice-desc">اختيار وتطوير ابتكار موجود من الحلول المقترحة</div>
+          </div>
+
+          <div class="choice-card selected" id="choiceCardNew" onclick="selectInnovationChoice('new')">
+            <div class="choice-icon">💡</div>
+            <div class="choice-title">الخيار الثاني</div>
+            <div class="choice-desc">ابتكار فكرة جديدة كلياً باستخدام التكنولوجيا والذكاء الاصطناعي</div>
+          </div>
+        </div>
+
+        <!-- نموذج الخيار الأول (ابتكار موجود) -->
+        <div id="formExistingInno" style="display: none;">
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label">اختاري الابتكار الذي تودين دراسته وتطويره:</label>
+            <select id="existingSelect" class="form-control" onchange="loadExistingDetails()">
+              <option value="">-- اضغطي للاختيار --</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">ما اسم الابتكار؟</label>
+            <input type="text" id="existingName" class="form-control" />
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">ما المشكلة التي يعالجها؟</label>
+            <textarea id="existingProblem" class="form-control"></textarea>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">كيف يعمل هذا الابتكار؟</label>
+            <textarea id="existingHowWorks" class="form-control"></textarea>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label">كيف سيساعد في تقليل هدر المياه في مدرستكِ بالتحديد؟</label>
+            <textarea id="existingSchoolHelp" class="form-control" placeholder="اشرحي أثره المباشر في فصول وممرات ودورات مياه مدرستكِ..."></textarea>
+          </div>
+        </div>
+
+        <!-- نموذج الخيار الثاني (فكرة جديدة) -->
+        <div id="formNewInno">
+          <div class="form-group field-with-ai" style="margin-bottom: 18px;">
+            <button class="ai-hint-btn" onclick="askAiHint('innovation_name')">🤖 استشيري المساعد</button>
+            <label class="form-label">اسم الابتكار المقترح:</label>
+            <input type="text" id="innoName" class="form-control" placeholder="مثال: حارس القطرة الذكي بالذكاء الاصطناعي" />
+          </div>
+
+          <div class="form-group field-with-ai" style="margin-bottom: 18px;">
+            <button class="ai-hint-btn" onclick="askAiHint('problem_description')">🤖 استشيري المساعد</button>
+            <label class="form-label">وصف مشكلة هدر المياه التي لاحظتِها:</label>
+            <textarea id="innoProblem" class="form-control" placeholder="أين تحدث المشكلة؟ وكم كمية المياه التي تُهدر تقريباً؟"></textarea>
+          </div>
+
+          <div class="form-group field-with-ai" style="margin-bottom: 18px;">
+            <button class="ai-hint-btn" onclick="askAiHint('innovation_idea')">🤖 استشيري المساعد</button>
+            <label class="form-label">فكرة ابتكاركِ المقترح:</label>
+            <textarea id="innoIdea" class="form-control" placeholder="اشرحي الفكرة الأساسية باختصار..."></textarea>
+          </div>
+
+          <div class="form-group field-with-ai" style="margin-bottom: 18px;">
+            <button class="ai-hint-btn" onclick="askAiHint('how_it_works')">🤖 استشيري المساعد</button>
+            <label class="form-label">كيف يعمل الابتكار؟ (خطوات العمل):</label>
+            <textarea id="innoHowWorks" class="form-control" placeholder="1. كيف يستشعر الهدر؟ 2. كيف يتصرف؟ 3. ماذا يرى المستخدم؟"></textarea>
+          </div>
+
+          <div class="form-group field-with-ai" style="margin-bottom: 18px;">
+            <button class="ai-hint-btn" onclick="askAiHint('technology_use')">🤖 استشيري المساعد</button>
+            <label class="form-label">كيف يستخدم التكنولوجيا أو الذكاء الاصطناعي؟</label>
+            <textarea id="innoTech" class="form-control" placeholder="مثال: حساسات حركة، خوارزميات تعلم آلي ترصد التسرب، تطبيق هاتف..."></textarea>
+          </div>
+
+          <div class="form-group field-with-ai" style="margin-bottom: 18px;">
+            <button class="ai-hint-btn" onclick="askAiHint('water_saving_impact')">🤖 استشيري المساعد</button>
+            <label class="form-label">كيف سيساهم في تقليل هدر المياه؟</label>
+            <textarea id="innoImpact" class="form-control" placeholder="كم لتراً تتوقعين توفيره؟ ما هو التغيير الإيجابي المتوقع؟"></textarea>
+          </div>
+
+          <div class="form-group field-with-ai" style="margin-bottom: 20px;">
+            <button class="ai-hint-btn" onclick="askAiHint('expected_benefits')">🤖 استشيري المساعد</button>
+            <label class="form-label">ما الفائدة المتوقعة للمدرسة والبيئة؟</label>
+            <textarea id="innoBenefits" class="form-control" placeholder="الفوائد البيئية، المالية، والتوعوية لزميلاتك الطالبات..."></textarea>
+          </div>
+
+          <!-- إرفاق صورة أو رسم توضيحي -->
+          <div class="drawing-box">
+            <h4 style="color: var(--primary-dark); margin-bottom: 10px;">🎨 إرفاق صورة أو رسم توضيحي لابتكاركِ:</h4>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">
+              يمكنكِ الرسم مباشرة على اللوحة التفاعلية بالأسفل، أو رفع ملف صورة من جهازكِ:
+            </p>
+
+            <div style="margin-bottom: 15px;">
+              <input type="file" id="imageFileInput" accept="image/*" class="form-control" style="max-width: 400px; margin: 0 auto;" />
+            </div>
+
+            <div style="font-weight: 700; color: #78909C; margin: 10px 0;">— أو ارسمي فكرتكِ هنا —</div>
+
+            <div class="canvas-wrapper">
+              <canvas id="drawingCanvas" width="450" height="250"></canvas>
+            </div>
+
+            <div class="canvas-toolbar">
+              <span style="font-size: 0.85rem; font-weight: 700;">الألوان:</span>
+              <div class="color-dot active" style="background: #0288D1;" onclick="setDrawingColor('#0288D1', this)"></div>
+              <div class="color-dot" style="background: #2E7D32;" onclick="setDrawingColor('#2E7D32', this)"></div>
+              <div class="color-dot" style="background: #E65100;" onclick="setDrawingColor('#E65100', this)"></div>
+              <div class="color-dot" style="background: #000000;" onclick="setDrawingColor('#000000', this)"></div>
+              
+              <button type="button" class="canvas-btn" onclick="clearCanvas()">
+                <span>🗑️ مسح اللوحة</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group-center" style="margin-top: 30px;">
+          <button class="btn btn-success" onclick="submitInnovation()" id="submitInnoBtn">
+            <span>✨ إرسال ابتكاري</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== الشاشة 5: المرحلة الرابعة (النجاح والشهادة) ==================== -->
+    <div class="app-screen" id="screen-stage4">
+      <div class="glass-card success-hero">
+        <div class="success-badge-icon">🎉</div>
+        <h2 style="color: var(--primary-dark); font-size: 2rem; margin-top: 10px;">أحسنتِ! لقد أصبحتِ الآن من حُرّاس المياه 🌊</h2>
+        
+        <p style="font-size: 1.2rem; color: #2E7D32; font-weight: 700; margin: 15px 0;">
+          فكرتكِ قد تكون بداية تغيير حقيقي في مدرستكِ. شكراً لمساهمتكِ في حماية البيئة والمحافظة على المياه.
+        </p>
+
+        <div class="participation-code-box">
+          <div style="font-size: 0.95rem; color: #1B5E20; font-weight: 700; margin-bottom: 6px;">رقم مشاركتكِ الخاص:</div>
+          <div class="code-text" id="finalParticipationCode">WG-000000</div>
+          <div style="margin-top: 10px;">
+            <button class="canvas-btn" onclick="copyParticipationCode()">📋 نسخ الكود</button>
+          </div>
+        </div>
+
+        <!-- بطاقة شهادة الإنجاز الرقمية -->
+        <div class="certificate-card" id="certificateBox">
+          <div style="font-size: 3rem; margin-bottom: 5px;">💧</div>
+          <div class="cert-title">شهادة حارسة المياه المبتكرة</div>
+          <p style="font-size: 1rem; color: #546E7A;">تَشهد مبادرة حُرّاس المياه بأن المبتكرة الخضراء:</p>
+          <div class="cert-student-name" id="certStudentName">سارة الأحمد</div>
+          <p style="font-size: 1.05rem; color: #37474F; line-height: 1.7;">
+            قد أتمت بنجاح تحدي استكشاف هدر المياه، وابتكرت حلاً تقنياً مستداماً يعزز ريادة الأعمال الخضراء والذكاء الاصطناعي في بيئتها المدرسية.
+          </p>
+
+          <div class="badges-earned-row">
+            <div class="badge-item">🛡️ حارسة المياه</div>
+            <div class="badge-item">🤖 المفكرة الذكية</div>
+            <div class="badge-item">🌱 المبتكرة الخضراء</div>
+          </div>
+
+          <div style="margin-top: 20px; font-size: 0.9rem; color: #78909C; display: flex; justify-content: space-between;">
+            <span id="certDateText">التاريخ: اليوم</span>
+            <span>رقم الاعتماد: <strong id="certCodeText">WG-XXXXXX</strong></span>
+          </div>
+        </div>
+
+        <div class="btn-group-center">
+          <button class="btn btn-primary" onclick="window.print()">
+            <span>🖨️ طباعة الشهادة</span>
+          </button>
+          <button class="btn btn-outline" onclick="openStudentQrModal()">
+            <span>📲 باركود مشاركة زميلاتي</span>
+          </button>
+          <button class="btn btn-outline" onclick="openLeaderboard()">
+            <span>🏆 مشاهدة لوحة الشرف</span>
+          </button>
+          <button class="btn btn-secondary" onclick="location.reload()">
+            <span>🔄 بداية تحدٍ جديد</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- نافذة المساعد الذكي العائمة -->
+  <div class="ai-assistant-modal" id="aiModal">
+    <div class="ai-modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span>🤖</span>
+        <span>مساعد المياه الذكي</span>
+      </div>
+      <button class="ai-modal-close" onclick="closeAiModal()">&times;</button>
+    </div>
+    <div class="ai-modal-body" id="aiModalBody">
+      جاري التفكير وتقديم الإرشاد...
+    </div>
+  </div>
+
+  <!-- نافذة تفاصيل الابتكار المنبثقة (المرحلة الثانية) -->
+  <div class="modal-overlay" id="innoDetailModal">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeInnoModal()">&times;</button>
+      <div id="innoModalIcon" style="font-size: 3.5rem; text-align: center; margin-bottom: 10px;">💧</div>
+      <h2 id="innoModalTitle" style="color: var(--primary-dark); text-align: center; margin-bottom: 15px;"></h2>
+      
+      <div style="margin-bottom: 16px;">
+        <h4 style="color: #D32F2F; margin-bottom: 6px;">🔍 المشكلة التي يعالجها:</h4>
+        <p id="innoModalProblem" style="color: #37474F; line-height: 1.6;"></p>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="color: #2E7D32; margin-bottom: 6px;">⚙️ كيف يعمل هذا الابتكار؟</h4>
+        <p id="innoModalHowWorks" style="color: #37474F; line-height: 1.6;"></p>
+      </div>
+
+      <div style="text-align: center;">
+        <button class="btn btn-primary" onclick="chooseThisInnoFromModal()">
+          <span>اختيار هذا الابتكار والبدء في تطويره ✨</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة لوحة الشرف والمتصدرات (Leaderboard Modal) -->
+  <div class="modal-overlay" id="leaderboardModal">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeLeaderboard()">&times;</button>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 3rem;">🏆</div>
+        <h2 style="color: var(--primary-dark);">لوحة الشرف – أفضل المبتكرات</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">أبرز الأفكار والابتكارات المسجلة لحماية المياه المدرسية</p>
+      </div>
+
+      <div id="leaderboardContent">
+        <p style="text-align: center; color: var(--text-muted);">جاري تحميل لوحة المتصدرات...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة باركود مشاركة الطالبات -->
+  <div class="modal-overlay" id="studentQrModal">
+    <div class="modal-content" style="text-align: center; max-width: 480px;">
+      <button class="modal-close-btn" onclick="closeStudentQrModal()">&times;</button>
+      <div style="font-size: 3rem; margin-bottom: 5px;">📲</div>
+      <h3 style="color: var(--primary-dark); margin-bottom: 8px;">شاركي التحدي مع زميلاتكِ</h3>
+      <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px;">
+        دعي زميلاتكِ في المدرسة يمسحن هذا الباركود بكاميرا الجوال للانضمام فوراً لتحدي حُرّاس المياه!
+      </p>
+      <img id="studentQrImg" style="width: 250px; height: 250px; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); margin: 0 auto 15px; display: block;" src="" alt="QR Code" />
+      <div id="studentQrUrl" style="direction: ltr; font-family: monospace; font-size: 0.9rem; color: #0288D1; margin-bottom: 16px; font-weight: 700;"></div>
+      <button class="btn btn-primary" onclick="closeStudentQrModal()">
+        <span>تم، شكراً لكِ 🌟</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- التذييل -->
+  <footer class="app-footer">
+    مشروع «حُرّاس المياه – ابتكري الحل» © 2024 | منصة ريادة الأعمال الخضراء والذكاء الاصطناعي للمدارس المستدامة 💧
+  </footer>
+
+  <script>
+    /* ================================================================
+       حالة التطبيق العامة (Application State)
+    ================================================================ */
+    const state = {
+      participantId: null,
+      participationCode: null,
+      name: '',
+      school: '',
+      grade: '',
+      score: 0,
+      currentStep: 1,
+      questions: [],
+      currentQIndex: 0,
+      answeredQuestions: {},
+      innovationsCatalog: [],
+      selectedInnovationType: 'new', // 'existing' or 'new'
+      selectedModalInno: null
+    };
+
+    // إعداد عداد الهدر في الشاشة الرئيسية
+    let wasteAmount = 3450;
+    setInterval(() => {
+      wasteAmount += Math.floor(Math.random() * 3) + 1;
+      const el = document.getElementById('wasteCounter');
+      if (el) el.textContent = wasteAmount.toLocaleString('ar-EG');
+    }, 2500);
+
+    // توليد قطرات الماء المتحركة في الخلفية
+    function initWaterDrops() {
+      const bg = document.getElementById('waterDrops');
+      if (!bg) return;
+      const drops = ['💧', '🌊', '🫧', '✨', '🌱'];
+      for (let i = 0; i < 20; i++) {
+        const drop = document.createElement('div');
+        drop.className = 'floating-drop';
+        drop.textContent = drops[i % drops.length];
+        drop.style.left = (Math.random() * 95) + '%';
+        drop.style.animationDuration = (8 + Math.random() * 10) + 's';
+        drop.style.animationDelay = (Math.random() * 8) + 's';
+        drop.style.fontSize = (1.2 + Math.random() * 1.5) + 'rem';
+        bg.appendChild(drop);
+      }
+    }
+
+    // التنقل بين الشاشات
+    function showScreen(screenId) {
+      document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(screenId);
+      if (target) {
+        target.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // تحديث شريط الخطوات في الأعلى
+    function updateStepper(stepNumber) {
+      state.currentStep = stepNumber;
+      const progressPercent = ((stepNumber - 1) / 3) * 80;
+      document.getElementById('stepperProgress').style.width = progressPercent + '%';
+
+      for (let i = 1; i <= 4; i++) {
+        const item = document.getElementById('step' + i);
+        if (!item) continue;
+        item.classList.remove('active', 'completed');
+        if (i < stepNumber) {
+          item.classList.add('completed');
+        } else if (i === stepNumber) {
+          item.classList.add('active');
+        }
+      }
+    }
+
+    function navToStep(step) {
+      if (step === 1 && state.participantId) {
+        showScreen('screen-stage1');
+        updateStepper(1);
+      } else if (step === 2) {
+        showScreen('screen-stage2');
+        updateStepper(2);
+      } else if (step === 3) {
+        showScreen('screen-stage3');
+        updateStepper(3);
+      }
+    }
+
+    function goHome() {
+      showScreen('screen-welcome');
+      updateStepper(1);
+    }
+
+    /* ================================================================
+       بدء التحدي وتسجيل الطالبة
+    ================================================================ */
+    async function startChallenge() {
+      const name = document.getElementById('studentNameInput').value.trim() || 'مبتكرة حُرّاس المياه';
+      const school = document.getElementById('studentSchoolInput').value.trim() || 'مدرستي الخضراء';
+      const grade = document.getElementById('studentGradeInput').value.trim() || 'المرحلة الدراسية';
+
+      state.name = name;
+      state.school = school;
+      state.grade = grade;
+
+      try {
+        const res = await fetch('/api/participant/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, school, grade })
+        });
+        const data = await res.json();
+        if (data.success) {
+          state.participantId = data.participantId;
+          state.participationCode = data.participationCode;
+          localStorage.setItem('wg_participant_code', data.participationCode);
+          localStorage.setItem('wg_student_name', name);
+          localStorage.setItem('wg_student_school', school);
+        }
+      } catch (err) {
+        console.warn('استمرار بدون اتصال خادم فوري:', err);
+        state.participationCode = 'WG-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+      }
+
+      showScreen('screen-stage1');
+      updateStepper(1);
+      loadQuestions();
+    }
+
+    // استئناف المشاركة السابقة
+    async function promptResumeCode() {
+      const saved = localStorage.getItem('wg_participant_code') || '';
+      const code = prompt('أدخلي كود مشاركتكِ السابق (مثال: WG-ABC12345):', saved);
+      if (!code) return;
+
+      try {
+        const res = await fetch('/api/participant/resume', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: code.trim() })
+        });
+        const data = await res.json();
+        if (data.success && data.participant) {
+          const p = data.participant;
+          state.participantId = p.id;
+          state.participationCode = p.participation_code;
+          state.name = p.name;
+          state.school = p.school;
+          state.score = p.quiz_score;
+          updateScoreDisplay(p.quiz_score);
+
+          alert(`أهلاً بعودتكِ أيتها المبتكرة ${p.name}! نقاطك الحالية: ${p.quiz_score} 💧`);
+          if (p.stage_completed >= 3) {
+            displayFinalSuccess(p.participation_code);
+          } else if (p.stage_completed >= 1) {
+            goToStage2();
+          } else {
+            showScreen('screen-stage1');
+            updateStepper(1);
+            loadQuestions();
+          }
+        } else {
+          alert(data.error || 'لم يتم العثور على هذا الكود');
+        }
+      } catch (e) {
+        alert('تعذر التحقق من الكود حالياً');
+      }
+    }
+
+    function updateScoreDisplay(pts) {
+      state.score = pts;
+      const el = document.getElementById('scoreText');
+      if (el) el.textContent = pts + ' نقطة';
+    }
+
+    /* ================================================================
+       المرحلة الأولى: الأسئلة التفاعلية (QUIZ)
+    ================================================================ */
+    async function loadQuestions() {
+      try {
+        const res = await fetch('/api/questions/1');
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          state.questions = data;
+        } else {
+          state.questions = getFallbackQuestions();
+        }
+      } catch (err) {
+        state.questions = getFallbackQuestions();
+      }
+
+      state.currentQIndex = 0;
+      renderCurrentQuestion();
+    }
+
+    function getFallbackQuestions() {
+      return [
+        {
+          id: 1,
+          question_text: 'ماذا يحدث عندما نفتح عبوة المياه ولا نستهلكها بالكامل؟',
+          question_type: 'multiple',
+          options: ['تُهدر المياه المتبقية وتُرمى في سلة المهملات', 'تتحول المياه المتبقية تلقائياً إلى بخار مفيد', 'لا يوجد أي ضرر بيئي أو هدر مالي', 'تُستخدم المياه تلقائياً في ري الحدائق'],
+          explanation: 'عندما نفتح عبوة ولا نكملها، تُهدر كميات كبيرة من المياه النقية التي استهلكت موارد وطاقة في تعبئتها ونقلها. الحل: احملي عبوة قابلة لإعادة التعبئة!',
+          points: 15
+        },
+        {
+          id: 2,
+          question_text: 'موقف واقعي: شاهدتِ في فناء المدرسة صنبور مياه مفتوحاً يتدفق بقوة دون استخدام، ما التصرف الصحيح؟',
+          question_type: 'scenario',
+          options: ['أغلق الصنبور فوراً بحذر ثم أبلغ المعلمة أو الإدارة', 'أتجاهله لأنه ليس مسؤوليتي المباشرة', 'أنتظر حتى تأتي طالبة أخرى لتغلقه', 'أصوره وأنصرف دون إغلاقه'],
+          explanation: 'الصنبور المفتوح يهدر أكثر من 150 لتراً في الساعة الواحدة! إغلاقه الفوري والإبلاغ هو التصرف الإيجابي المسؤول.',
+          points: 20
+        },
+        {
+          id: 3,
+          question_text: 'هل العبارة صحيحة أم خطأ: الصنبور الذي يقطر ببطء لا يهدر كمية تستحق الاهتمام؟',
+          question_type: 'truefalse',
+          options: ['صح', 'خطأ'],
+          explanation: 'خطأ! قطرة واحدة كل ثانية تهدر أكثر من 30 لتراً يومياً ونحو 11,000 لتر سنوياً!',
+          points: 10
+        },
+        {
+          id: 4,
+          question_text: 'كيف يمكن تقليل هدر المياه في دورات المياه المدرسية بنسبة تصل إلى 70%؟',
+          question_type: 'image',
+          options: ['تركيب صنابير ذكية مزودة بحساسات استشعار الحركة', 'استخدام صنابير تقليدية فقط', 'إغلاق دورات المياه تماماً أثناء اليوم الدراسي', 'تقليل ضغط المياه لدرجة الانقطاع'],
+          explanation: 'الصنابير الذكية المزودة بحساسات توقف تدفق المياه تلقائياً عند إبعاد اليدين وتوفر ما يصل إلى 70% من الاستهلاك!',
+          points: 20
+        },
+        {
+          id: 5,
+          question_text: 'لماذا يُعتبر ترشيد استهلاك المياه مسؤولية الجميع؟',
+          question_type: 'multiple',
+          options: ['لأن المياه العذبة ثروة ثمينة محدودة يحتاجها كل كائن حي لكوكب مستدام', 'لتقليل فاتورة المياه للمدرسة فقط', 'لأن القوانين تفرض ذلك كعقوبة فقط', 'لا يهم فالمياه وفيرة في الطبيعة'],
+          explanation: 'المياه العذبة تمثل أقل من 1% من مياه الأرض المتاحة للبشر. حمايتها واجب أخلاقي وبيئي مشترك.',
+          points: 15
+        },
+        {
+          id: 6,
+          question_text: 'كيف يمكن للتكنولوجيا والذكاء الاصطناعي المساعدة في القضاء على هدر المياه؟',
+          question_type: 'multiple',
+          options: ['تحليل أنماط التدفق وكشف التسريبات المخفية وإرسال تنبيهات فورية للمسؤولين', 'منع الطلاب من شرب المياه أثناء الحصص', 'استبدال المياه بالكامل بسوائل صناعية', 'لا يوجد أي دور للذكاء الاصطناعي في إدارة المياه'],
+          explanation: 'الذكاء الاصطناعي يستطيع تحليل بيانات الاستهلاك واكتشاف أي تدفق شاذ يشير لتسريب وإصلاحه فوراً.',
+          points: 20
+        }
+      ];
+    }
+
+    function renderCurrentQuestion() {
+      const q = state.questions[state.currentQIndex];
+      if (!q) return;
+
+      document.getElementById('quizCounterText').textContent = `السؤال ${state.currentQIndex + 1} من ${state.questions.length}`;
+      document.getElementById('qText').textContent = q.question_text;
+
+      // نوع السؤال
+      const badgeBox = document.getElementById('qBadgeContainer');
+      badgeBox.innerHTML = '';
+      const badge = document.createElement('span');
+      badge.className = 'question-badge';
+
+      const typeMap = {
+        multiple: { text: '🎯 اختيار من متعدد', cls: 'badge-multiple' },
+        truefalse: { text: '⚖️ صح أو خطأ', cls: 'badge-truefalse' },
+        scenario: { text: '🏫 موقف واقعي', cls: 'badge-scenario' },
+        image: { text: '🖼️ سؤال مصور وتقني', cls: 'badge-image' }
+      };
+
+      const meta = typeMap[q.question_type] || typeMap.multiple;
+      badge.textContent = meta.text;
+      badge.classList.add(meta.cls);
+      badgeBox.appendChild(badge);
+
+      // العنصر المرئي للأسئلة المصورة
+      const visualBox = document.getElementById('qVisualBox');
+      if (q.question_type === 'image' || q.image_url) {
+        visualBox.style.display = 'block';
+        visualBox.textContent = q.image_url === 'sensor_tap' ? '🚿✨' : '💧🔍';
+      } else {
+        visualBox.style.display = 'none';
+      }
+
+      // قائمة الخيارات
+      const optList = document.getElementById('qOptionsList');
+      optList.innerHTML = '';
+
+      const explBox = document.getElementById('qExplanationBox');
+      explBox.className = 'explanation-box';
+      explBox.style.display = 'none';
+
+      const isAnswered = state.answeredQuestions[q.id];
+
+      q.options.forEach((optText, idx) => {
+        const item = document.createElement('div');
+        item.className = 'option-item';
+
+        const indicator = document.createElement('div');
+        indicator.className = 'option-indicator';
+        indicator.textContent = String.fromCharCode(1571 + idx); // أ ، ب ، ج ، د
+
+        const label = document.createElement('span');
+        label.textContent = optText;
+
+        item.appendChild(indicator);
+        item.appendChild(label);
+
+        if (isAnswered) {
+          if (optText === isAnswered.userAnswer) {
+            item.classList.add(isAnswered.isCorrect ? 'selected-correct' : 'selected-wrong');
+          }
+          if (optText === isAnswered.correctAnswer && !isAnswered.isCorrect) {
+            item.classList.add('selected-correct');
+          }
+        } else {
+          item.onclick = () => handleAnswerSelect(q.id, optText, item);
+        }
+
+        optList.appendChild(item);
+      });
+
+      // إظهار التفسير إن كان مجاباً
+      if (isAnswered) {
+        explBox.textContent = (isAnswered.isCorrect ? '✅ إجابة رائعة وممتازة! ' : '💡 للتوضيح: ') + isAnswered.explanation;
+        explBox.className = 'explanation-box ' + (isAnswered.isCorrect ? 'correct' : 'wrong');
+        explBox.style.display = 'block';
+      }
+
+      // أزرار التنقل
+      document.getElementById('prevQBtn').style.display = state.currentQIndex > 0 ? 'inline-flex' : 'none';
+
+      const isLast = state.currentQIndex === state.questions.length - 1;
+      document.getElementById('nextQBtn').style.display = (isAnswered && !isLast) ? 'inline-flex' : 'none';
+      document.getElementById('finishQBtn').style.display = (isAnswered && isLast) ? 'inline-flex' : 'none';
+    }
+
+    async function handleAnswerSelect(questionId, selectedAnswer, clickedEl) {
+      const q = state.questions[state.currentQIndex];
+      let isCorrect = false;
+      let pointsEarned = 0;
+      let explanation = q.explanation || 'الترشيد مسؤولية الجميع لحماية البيئة.';
+      let correctAnswer = '';
+
+      try {
+        const res = await fetch('/api/quiz/answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questionId, answer: selectedAnswer })
+        });
+        const data = await res.json();
+        isCorrect = data.isCorrect;
+        pointsEarned = data.pointsEarned;
+        explanation = data.explanation || explanation;
+        correctAnswer = data.correctAnswer;
+        if (data.currentTotalScore) updateScoreDisplay(data.currentTotalScore);
+      } catch (err) {
+        // Fallback محلي
+        isCorrect = (selectedAnswer === q.correct_answer || state.currentQIndex === 0 || selectedAnswer.includes('أغلق') || selectedAnswer.includes('تركيب') || selectedAnswer.includes('مسؤولية'));
+        pointsEarned = isCorrect ? (q.points || 15) : 0;
+        updateScoreDisplay(state.score + pointsEarned);
+      }
+
+      state.answeredQuestions[questionId] = {
+        userAnswer: selectedAnswer,
+        isCorrect,
+        pointsEarned,
+        explanation,
+        correctAnswer
+      };
+
+      renderCurrentQuestion();
+    }
+
+    function nextQuestion() {
+      if (state.currentQIndex < state.questions.length - 1) {
+        state.currentQIndex++;
+        renderCurrentQuestion();
+      }
+    }
+
+    function prevQuestion() {
+      if (state.currentQIndex > 0) {
+        state.currentQIndex--;
+        renderCurrentQuestion();
+      }
+    }
+
+    async function completeQuizStage() {
+      try {
+        await fetch('/api/quiz/complete', { method: 'POST' });
+      } catch (e) {}
+
+      goToStage2();
+    }
+
+    /* ================================================================
+       المرحلة الثانية: اكتشفي الابتكارات
+    ================================================================ */
+    async function goToStage2() {
+      showScreen('screen-stage2');
+      updateStepper(2);
+      await loadInnovationsCatalog();
+    }
+
+    async function loadInnovationsCatalog() {
+      const grid = document.getElementById('innovationsCatalogGrid');
+      grid.innerHTML = '<div style="text-align: center; grid-column: 1/-1;">جاري تحميل الابتكارات المقترحة...</div>';
+
+      try {
+        const res = await fetch('/api/innovations-catalog');
+        const list = await res.json();
+        if (Array.isArray(list) && list.length > 0) {
+          state.innovationsCatalog = list;
+        } else {
+          state.innovationsCatalog = getFallbackCatalog();
+        }
+      } catch (e) {
+        state.innovationsCatalog = getFallbackCatalog();
+      }
+
+      grid.innerHTML = '';
+      state.innovationsCatalog.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'innovation-card';
+        card.onclick = () => openInnoModal(item);
+
+        const iconBox = document.createElement('div');
+        iconBox.className = 'inno-icon-box';
+        iconBox.style.backgroundColor = (item.color || '#0288D1') + '15';
+        iconBox.style.color = item.color || '#0288D1';
+        iconBox.textContent = item.icon || '💧';
+
+        const title = document.createElement('div');
+        title.className = 'inno-title';
+        title.textContent = item.title;
+
+        const desc = document.createElement('div');
+        desc.className = 'inno-desc';
+        desc.textContent = item.description;
+
+        const btn = document.createElement('div');
+        btn.className = 'inno-btn';
+        btn.innerHTML = '<span>اضغطي لاكتشاف التفاصيل</span> <span>←</span>';
+
+        card.appendChild(iconBox);
+        card.appendChild(title);
+        card.appendChild(desc);
+        card.appendChild(btn);
+
+        grid.appendChild(card);
+      });
+
+      // ملء قائمة الاختيار للخيار الأول في المرحلة الثالثة
+      const select = document.getElementById('existingSelect');
+      select.innerHTML = '<option value="">-- اختاري أحد الحلول المقترحة --</option>';
+      state.innovationsCatalog.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = item.title;
+        select.appendChild(opt);
+      });
+    }
+
+    function getFallbackCatalog() {
+      return [
+        {
+          id: 1,
+          title: 'العبوات القابلة لإعادة التعبئة',
+          description: 'استخدام عبوات مياه شخصية بدلاً من فتح عبوات جديدة وترك المتبقي منها.',
+          how_it_works: 'تُزوَّد المدرسة بمحطات تعبئة مياه نقية، تحمل كل طالبة عبوتها الشخصية وتملأها عند الحاجة مع تتبع العبوات الموفرة.',
+          problem_solved: 'هدر مياه العبوات البلاستيكية المفتوحة غير المكتملة وتراكم النفايات.',
+          icon: '🍶',
+          color: '#4CAF50'
+        },
+        {
+          id: 2,
+          title: 'الصنابير الذكية',
+          description: 'تركيب حساسات توقف تدفق المياه تلقائياً عند إبعاد اليدين.',
+          how_it_works: 'حساس الأشعة تحت الحمراء يستشعر وجود اليدين فيفتح الصنبور فوراً، ويغلقه بمجرد إبعادهما، مع شاشة تعرض التوفير.',
+          problem_solved: 'إهمال إغلاق الصنابير وإبقاؤها مفتوحة دون استخدام.',
+          icon: '🚿',
+          color: '#0288D1'
+        },
+        {
+          id: 3,
+          title: 'نظام كشف التسرب',
+          description: 'حساسات تكتشف تسرب المياه وترسل تنبيهاً فورياً للمسؤولين.',
+          how_it_works: 'مستشعرات ضغط واهتزاز صوتية على الأنابيب تكتشف أي تسريب خفي وترسل إشعاراً مع تحديد الموقع بدقة.',
+          problem_solved: 'التسريبات غير المرئية التي تهدر المياه لأيام دون اكتشاف.',
+          icon: '🔍',
+          color: '#FF9800'
+        },
+        {
+          id: 4,
+          title: 'نظام مراقبة استهلاك المياه بالذكاء الاصطناعي',
+          description: 'استخدام تقنيات الذكاء الاصطناعي لمراقبة الاستهلاك واكتشاف الهدر غير الطبيعي.',
+          how_it_works: 'عدادات ذكية تقرأ التدفق، وتحلل خوارزميات الذكاء الاصطناعي الأنماط وتكتشف أي شذوذ استهلاك غير مبرر.',
+          problem_solved: 'غياب البيانات الدقيقة عن أوقات وأماكن الهدر وصعوبة اتخاذ قرارات سريعة.',
+          icon: '🤖',
+          color: '#7B1FA2'
+        },
+        {
+          id: 5,
+          title: 'حملة التوعية الرقمية',
+          description: 'إطلاق مسابقات وتحديات مدرسية لتشجيع الطالبات على المحافظة على المياه.',
+          how_it_works: 'تطبيق يُتيح للطالبات تسجيل السلوكيات الإيجابية وكسب نقاط، مع شاشات تفاعلية تعرض أفضل الفصول توفيراً.',
+          problem_solved: 'قلة الوعي والدافع المعنوي لدى الطالبات للمحافظة على المياه.',
+          icon: '📱',
+          color: '#E91E63'
+        }
+      ];
+    }
+
+    function openInnoModal(item) {
+      state.selectedModalInno = item;
+      document.getElementById('innoModalIcon').textContent = item.icon || '💧';
+      document.getElementById('innoModalTitle').textContent = item.title;
+      document.getElementById('innoModalProblem').textContent = item.problem_solved;
+      document.getElementById('innoModalHowWorks').textContent = item.how_it_works;
+      document.getElementById('innoDetailModal').style.display = 'flex';
+    }
+
+    function closeInnoModal() {
+      document.getElementById('innoDetailModal').style.display = 'none';
+    }
+
+    function chooseThisInnoFromModal() {
+      closeInnoModal();
+      goToStage3();
+      selectInnovationChoice('existing');
+      if (state.selectedModalInno) {
+        document.getElementById('existingSelect').value = state.selectedModalInno.id;
+        fillExistingFields(state.selectedModalInno);
+      }
+    }
+
+    /* ================================================================
+       المرحلة الثالثة: ابتكري الحل (SUBMISSION & AI)
+    ================================================================ */
+    function goToStage3() {
+      showScreen('screen-stage3');
+      updateStepper(3);
+      initCanvas();
+    }
+
+    function selectInnovationChoice(type) {
+      state.selectedInnovationType = type;
+      const cardExisting = document.getElementById('choiceCardExisting');
+      const cardNew = document.getElementById('choiceCardNew');
+      const formExisting = document.getElementById('formExistingInno');
+      const formNew = document.getElementById('formNewInno');
+
+      if (type === 'existing') {
+        cardExisting.classList.add('selected');
+        cardNew.classList.remove('selected');
+        formExisting.style.display = 'block';
+        formNew.style.display = 'none';
+      } else {
+        cardNew.classList.add('selected');
+        cardExisting.classList.remove('selected');
+        formNew.style.display = 'block';
+        formExisting.style.display = 'none';
+      }
+    }
+
+    function loadExistingDetails() {
+      const select = document.getElementById('existingSelect');
+      const selectedId = select.value;
+      const item = state.innovationsCatalog.find(i => i.id == selectedId);
+      if (item) {
+        fillExistingFields(item);
+      }
+    }
+
+    function fillExistingFields(item) {
+      document.getElementById('existingName').value = item.title;
+      document.getElementById('existingProblem').value = item.problem_solved;
+      document.getElementById('existingHowWorks').value = item.how_it_works;
+      document.getElementById('existingSchoolHelp').value = `سيساعد هذا الابتكار مدرستنا في حل مشكلة (${item.problem_solved}) من خلال (${item.how_it_works}) لنوفر آلاف اللترات أسبوعياً.`;
+    }
+
+    // استشارة المساعد الذكي
+    async function askAiHint(fieldName) {
+      const modal = document.getElementById('aiModal');
+      const body = document.getElementById('aiModalBody');
+      modal.style.display = 'block';
+      body.innerHTML = '🤖 جاري التفكير وطرح أسئلة إرشادية ذكية...';
+
+      let currentText = '';
+      if (fieldName === 'innovation_name') currentText = document.getElementById('innoName').value;
+      if (fieldName === 'problem_description') currentText = document.getElementById('innoProblem').value;
+      if (fieldName === 'innovation_idea') currentText = document.getElementById('innoIdea').value;
+      if (fieldName === 'how_it_works') currentText = document.getElementById('innoHowWorks').value;
+      if (fieldName === 'technology_use') currentText = document.getElementById('innoTech').value;
+      if (fieldName === 'water_saving_impact') currentText = document.getElementById('innoImpact').value;
+      if (fieldName === 'expected_benefits') currentText = document.getElementById('innoBenefits').value;
+
+      try {
+        const res = await fetch('/api/ai-hint', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ field: fieldName, currentText })
+        });
+        const data = await res.json();
+        // تحويل أسطر الماركداون البسيطة إلى HTML
+        const formatted = (data.hint || '')
+          .replace(/### (.*)/g, '<h3 style="color:#7B1FA2; margin-bottom:8px;">$1</h3>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/• (.*)/g, '<div style="margin-bottom:6px;">🔹 $1</div>')
+          .replace(/\n\n/g, '<br/>');
+        body.innerHTML = formatted;
+      } catch (err) {
+        body.innerHTML = '💡 فكري في الأثر المباشر لابتكاركِ في مدرستكِ، وكيف يمكن للتقنية أن تجعله أذكى وأكثر فاعلية!';
+      }
+    }
+
+    function closeAiModal() {
+      document.getElementById('aiModal').style.display = 'none';
+    }
+
+    // إعداد لوحة الرسم التفاعلية
+    let canvas, ctx, isDrawing = false, currentColor = '#0288D1';
+
+    function initCanvas() {
+      canvas = document.getElementById('drawingCanvas');
+      if (!canvas) return;
+      ctx = canvas.getContext('2d');
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = currentColor;
+
+      // أحداث الماوس واللمس
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+      canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing);
+    }
+
+    function startDrawing(e) {
+      isDrawing = true;
+      const rect = canvas.getBoundingClientRect();
+      ctx.beginPath();
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      const rect = canvas.getBoundingClientRect();
+      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+      ctx.stroke();
+    }
+
+    function stopDrawing() {
+      isDrawing = false;
+    }
+
+    function handleTouchStart(e) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      isDrawing = true;
+      ctx.beginPath();
+      ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    }
+
+    function handleTouchMove(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+      ctx.stroke();
+    }
+
+    function setDrawingColor(col, el) {
+      currentColor = col;
+      if (ctx) ctx.strokeStyle = col;
+      document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+      if (el) el.classList.add('active');
+    }
+
+    function clearCanvas() {
+      if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    function isCanvasBlank() {
+      if (!canvas) return true;
+      const pixelBuffer = new Uint32Array(
+        ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+      );
+      return !pixelBuffer.some(color => color !== 0);
+    }
+
+    // إرسال الابتكار النهائي
+    async function submitInnovation() {
+      const btn = document.getElementById('submitInnoBtn');
+      btn.disabled = true;
+      btn.textContent = 'جاري الإرسال وحفظ الابتكار... ✨';
+
+      const type = state.selectedInnovationType;
+      const formData = new FormData();
+      formData.append('type', type);
+      formData.append('student_name', state.name || 'مبتكرة حُرّاس المياه');
+      formData.append('student_school', state.school || 'مدرستي');
+      formData.append('student_grade', state.grade || 'المرحلة');
+
+      if (type === 'existing') {
+        const name = document.getElementById('existingName').value.trim();
+        const problem = document.getElementById('existingProblem').value.trim();
+        const howWorks = document.getElementById('existingHowWorks').value.trim();
+        const help = document.getElementById('existingSchoolHelp').value.trim();
+
+        if (!name) {
+          alert('يرجى اختيار أحد الابتكارات المقترحة أولاً');
+          btn.disabled = false;
+          btn.textContent = '✨ إرسال ابتكاري';
+          return;
+        }
+
+        formData.append('innovation_name', name);
+        formData.append('problem_description', problem);
+        formData.append('innovation_idea', `تطبيق وتطوير ابتكار (${name}) في المدرسة`);
+        formData.append('how_it_works', howWorks);
+        formData.append('water_saving_impact', help);
+        formData.append('expected_benefits', help);
+      } else {
+        const name = document.getElementById('innoName').value.trim();
+        const problem = document.getElementById('innoProblem').value.trim();
+        const idea = document.getElementById('innoIdea').value.trim();
+        const howWorks = document.getElementById('innoHowWorks').value.trim();
+        const tech = document.getElementById('innoTech').value.trim();
+        const impact = document.getElementById('innoImpact').value.trim();
+        const benefits = document.getElementById('innoBenefits').value.trim();
+
+        if (!name || !problem || !idea) {
+          alert('يرجى كتابة اسم الابتكار ووصف المشكلة وفكرة الابتكار على الأقل لتتمكني من الإرسال!');
+          btn.disabled = false;
+          btn.textContent = '✨ إرسال ابتكاري';
+          return;
+        }
+
+        formData.append('innovation_name', name);
+        formData.append('problem_description', problem);
+        formData.append('innovation_idea', idea);
+        formData.append('how_it_works', howWorks);
+        formData.append('technology_use', tech);
+        formData.append('water_saving_impact', impact);
+        formData.append('expected_benefits', benefits);
+      }
+
+      // إرفاق الصورة أو الرسمة
+      const fileInput = document.getElementById('imageFileInput');
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        formData.append('image', fileInput.files[0]);
+      } else if (!isCanvasBlank()) {
+        const dataUrl = canvas.toDataURL('image/png');
+        formData.append('drawing_data', dataUrl);
+      }
+
+      try {
+        const res = await fetch('/api/innovation/submit', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          displayFinalSuccess(data.participationCode);
+        } else {
+          alert(data.error || 'حدث خطأ أثناء الإرسال');
+          btn.disabled = false;
+          btn.textContent = '✨ إرسال ابتكاري';
+        }
+      } catch (err) {
+        // في حال انقطاع الشبكة
+        const fallbackCode = state.participationCode || ('WG-' + Math.random().toString(36).substr(2, 8).toUpperCase());
+        displayFinalSuccess(fallbackCode);
+      }
+    }
+
+    /* ================================================================
+       المرحلة الرابعة: شاشة النجاح والشهادة
+    ================================================================ */
+    function displayFinalSuccess(code) {
+      state.participationCode = code;
+      showScreen('screen-stage4');
+      updateStepper(4);
+
+      document.getElementById('finalParticipationCode').textContent = code;
+      document.getElementById('certCodeText').textContent = code;
+      document.getElementById('certStudentName').textContent = state.name || 'سارة الأحمد';
+      
+      const today = new Date();
+      document.getElementById('certDateText').textContent = 'التاريخ: ' + today.toLocaleDateString('ar-EG');
+    }
+
+    function copyParticipationCode() {
+      const code = document.getElementById('finalParticipationCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('تم نسخ كود المشاركة الخاص بكِ بنجاح: ' + code);
+      });
+    }
+
+    /* ================================================================
+       لوحة الشرف والمتصدرات (Leaderboard)
+    ================================================================ */
+    async function openLeaderboard() {
+      const modal = document.getElementById('leaderboardModal');
+      const content = document.getElementById('leaderboardContent');
+      modal.style.display = 'flex';
+      content.innerHTML = '<p style="text-align:center; padding:20px;">جاري جلب قائمة المبتكرات المتميزات...</p>';
+
+      try {
+        const res = await fetch('/api/leaderboard');
+        const data = await res.json();
+
+        let html = '';
+        if (data.featuredInnovations && data.featuredInnovations.length > 0) {
+          html += '<h3 style="color:#2E7D32; margin-bottom:12px;">🌟 أفضل الابتكارات المتميزة:</h3>';
+          data.featuredInnovations.forEach(item => {
+            html += `
+              <div style="background:#F1F8E9; border-radius:12px; padding:15px; margin-bottom:12px; border:1px solid #C8E6C9;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <strong style="color:#1B5E20; font-size:1.1rem;">💡 ${item.innovation_name}</strong>
+                  <span style="background:#4CAF50; color:white; padding:2px 10px; border-radius:50px; font-size:0.8rem; font-weight:700;">مميز ⭐</span>
+                </div>
+                <div style="font-size:0.9rem; color:#558B2F; margin-bottom:6px;">المبتكرة: <strong>${item.student_name || 'طالبة'}</strong> | ${item.student_school || 'المدرسة'}</div>
+                <p style="font-size:0.95rem; color:#37474F;">${item.innovation_idea || ''}</p>
+              </div>
+            `;
+          });
+        }
+
+        if (data.topParticipants && data.topParticipants.length > 0) {
+          html += '<h3 style="color:#0288D1; margin:20px 0 12px;">🏆 أعلى الطالبات نقاطاً في التحدي:</h3>';
+          data.topParticipants.forEach((p, idx) => {
+            html += `
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#F4FAFD; border-radius:10px; padding:10px 16px; margin-bottom:8px; border:1px solid #B3E5FC;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-weight:900; font-size:1.1rem; color:#01579B;">#${idx + 1}</span>
+                  <div>
+                    <strong>${p.name || 'طالبة'}</strong>
+                    <div style="font-size:0.8rem; color:#78909C;">${p.school || ''}</div>
+                  </div>
+                </div>
+                <div style="font-weight:800; color:#E65100;">${p.quiz_score} 💧</div>
+              </div>
+            `;
+          });
+        }
+
+        if (!html) {
+          html = '<p style="text-align:center; padding:20px; color:#78909C;">كوني أول من يقدم ابتكاراً مميزاً لتتصدري لوحة الشرف! 🌟</p>';
+        }
+
+        content.innerHTML = html;
+      } catch (err) {
+        content.innerHTML = '<p style="text-align:center; color:#C62828;">تعذر تحميل لوحة الشرف حالياً</p>';
+      }
+    }
+
+    function closeLeaderboard() {
+      document.getElementById('leaderboardModal').style.display = 'none';
+    }
+
+    // فتح وإغلاق باركود مشاركة الطالبات
+    async function openStudentQrModal() {
+      const modal = document.getElementById('studentQrModal');
+      modal.style.display = 'flex';
+      try {
+        const res = await fetch('/api/qrcode');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('studentQrImg').src = data.qrDataUrl;
+          document.getElementById('studentQrUrl').textContent = data.url;
+        }
+      } catch (e) {
+        console.error('تعذر جلب الباركود:', e);
+      }
+    }
+
+    function closeStudentQrModal() {
+      document.getElementById('studentQrModal').style.display = 'none';
+    }
+
+    // التهيئة التلقائية عند تشغيل الصفحة
+    document.addEventListener('DOMContentLoaded', () => {
+      initWaterDrops();
+
+      // استعادة اسم الطالبة ومدرستها إن وُجد
+      const savedName = localStorage.getItem('wg_student_name');
+      const savedSchool = localStorage.getItem('wg_student_school');
+      if (savedName) document.getElementById('studentNameInput').value = savedName;
+      if (savedSchool) document.getElementById('studentSchoolInput').value = savedSchool;
+
+      // إغلاق النوافذ عند النقر على الخلفية
+      window.onclick = function(event) {
+        const innoModal = document.getElementById('innoDetailModal');
+        const lbModal = document.getElementById('leaderboardModal');
+        const qrModal = document.getElementById('studentQrModal');
+        if (event.target === innoModal) innoModal.style.display = 'none';
+        if (event.target === lbModal) lbModal.style.display = 'none';
+        if (event.target === qrModal) qrModal.style.display = 'none';
+      };
+    });
+  </script>
+</body>
+</html>
