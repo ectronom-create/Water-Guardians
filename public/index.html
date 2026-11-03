@@ -1506,6 +1506,30 @@
     /* ================================================================
        حالة التطبيق العامة (Application State)
     ================================================================ */
+    // دالة جلب آمنة تحمي من أخطاء 404 وتدعم النشر على GitHub Pages أو الخوادم
+    async function safeApiCall(url, method = 'GET', body = null) {
+      try {
+        const opts = { method, headers: {} };
+        if (body) {
+          if (body instanceof FormData) {
+            opts.body = body;
+          } else {
+            opts.headers['Content-Type'] = 'application/json';
+            opts.body = JSON.stringify(body);
+          }
+        }
+        const res = await fetch(url, opts);
+        if (!res.ok) return null;
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          return await res.json();
+        }
+        return null;
+      } catch (err) {
+        return null;
+      }
+    }
+
     const state = {
       participantId: null,
       participationCode: null,
@@ -1605,24 +1629,17 @@
       state.school = school;
       state.grade = grade;
 
-      try {
-        const res = await fetch('/api/participant/start', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, school, grade })
-        });
-        const data = await res.json();
-        if (data.success) {
-          state.participantId = data.participantId;
-          state.participationCode = data.participationCode;
-          localStorage.setItem('wg_participant_code', data.participationCode);
-          localStorage.setItem('wg_student_name', name);
-          localStorage.setItem('wg_student_school', school);
-        }
-      } catch (err) {
-        console.warn('استمرار بدون اتصال خادم فوري:', err);
+      const data = await safeApiCall('/api/participant/start', 'POST', { name, school, grade });
+      if (data && data.success) {
+        state.participantId = data.participantId;
+        state.participationCode = data.participationCode;
+        localStorage.setItem('wg_participant_code', data.participationCode);
+      } else {
         state.participationCode = 'WG-' + Math.random().toString(36).substr(2, 8).toUpperCase();
       }
+
+      localStorage.setItem('wg_student_name', name);
+      localStorage.setItem('wg_student_school', school);
 
       showScreen('screen-stage1');
       updateStepper(1);
@@ -1679,15 +1696,10 @@
        المرحلة الأولى: الأسئلة التفاعلية (QUIZ)
     ================================================================ */
     async function loadQuestions() {
-      try {
-        const res = await fetch('/api/questions/1');
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          state.questions = data;
-        } else {
-          state.questions = getFallbackQuestions();
-        }
-      } catch (err) {
+      const data = await safeApiCall('/api/questions/1');
+      if (Array.isArray(data) && data.length > 0) {
+        state.questions = data;
+      } else {
         state.questions = getFallbackQuestions();
       }
 
@@ -1842,21 +1854,18 @@
       let explanation = q.explanation || 'الترشيد مسؤولية الجميع لحماية البيئة.';
       let correctAnswer = '';
 
-      try {
-        const res = await fetch('/api/quiz/answer', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ questionId, answer: selectedAnswer })
-        });
-        const data = await res.json();
+      const data = await safeApiCall('/api/quiz/answer', 'POST', { questionId, answer: selectedAnswer });
+      if (data && typeof data.isCorrect === 'boolean') {
         isCorrect = data.isCorrect;
         pointsEarned = data.pointsEarned;
         explanation = data.explanation || explanation;
         correctAnswer = data.correctAnswer;
         if (data.currentTotalScore) updateScoreDisplay(data.currentTotalScore);
-      } catch (err) {
-        // Fallback محلي
-        isCorrect = (selectedAnswer === q.correct_answer || state.currentQIndex === 0 || selectedAnswer.includes('أغلق') || selectedAnswer.includes('تركيب') || selectedAnswer.includes('مسؤولية'));
+      } else {
+        // Fallback محلي آمن في حال غياب السيرفر
+        const cleanA = (selectedAnswer || '').trim().toLowerCase();
+        const cleanC = (q.correct_answer || '').trim().toLowerCase();
+        isCorrect = (cleanA === cleanC || selectedAnswer.includes('أغلق') || selectedAnswer.includes('تركيب') || selectedAnswer.includes('ثروة ثمينة') || selectedAnswer.includes('تحليل'));
         pointsEarned = isCorrect ? (q.points || 15) : 0;
         updateScoreDisplay(state.score + pointsEarned);
       }
@@ -1907,15 +1916,10 @@
       const grid = document.getElementById('innovationsCatalogGrid');
       grid.innerHTML = '<div style="text-align: center; grid-column: 1/-1;">جاري تحميل الابتكارات المقترحة...</div>';
 
-      try {
-        const res = await fetch('/api/innovations-catalog');
-        const list = await res.json();
-        if (Array.isArray(list) && list.length > 0) {
-          state.innovationsCatalog = list;
-        } else {
-          state.innovationsCatalog = getFallbackCatalog();
-        }
-      } catch (e) {
+      const list = await safeApiCall('/api/innovations-catalog');
+      if (Array.isArray(list) && list.length > 0) {
+        state.innovationsCatalog = list;
+      } else {
         state.innovationsCatalog = getFallbackCatalog();
       }
 
@@ -2265,21 +2269,10 @@
         formData.append('drawing_data', dataUrl);
       }
 
-      try {
-        const res = await fetch('/api/innovation/submit', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-          displayFinalSuccess(data.participationCode);
-        } else {
-          alert(data.error || 'حدث خطأ أثناء الإرسال');
-          btn.disabled = false;
-          btn.textContent = '✨ إرسال ابتكاري';
-        }
-      } catch (err) {
-        // في حال انقطاع الشبكة
+      const data = await safeApiCall('/api/innovation/submit', 'POST', formData);
+      if (data && data.success) {
+        displayFinalSuccess(data.participationCode);
+      } else {
         const fallbackCode = state.participationCode || ('WG-' + Math.random().toString(36).substr(2, 8).toUpperCase());
         displayFinalSuccess(fallbackCode);
       }

@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة تحكم حُرّاس المياه | الإدارة المدرسية المتقدمة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0F172A;
+      --sidebar-bg: #1E293B;
+      --card-bg: #1E293B;
+      --border-color: #334155;
+      --primary: #0288D1;
+      --primary-hover: #03A9F4;
+      --green: #10B981;
+      --green-dark: #059669;
+      --amber: #F59E0B;
+      --red: #EF4444;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', sans-serif;
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* شاشة تسجيل الدخول */
+    #loginOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 35px 30px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+
+    .login-icon {
+      font-size: 3.5rem;
+      margin-bottom: 10px;
+    }
+
+    .login-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #38BDF8;
+      margin-bottom: 6px;
+    }
+
+    .login-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 25px;
+    }
+
+    /* الشريط الجانبي (Sidebar) */
+    .sidebar {
+      width: 270px;
+      background: var(--sidebar-bg);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      min-height: 100vh;
+      transition: all 0.3s;
+    }
+
+    .sidebar-brand {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-brand-icon {
+      font-size: 2rem;
+    }
+
+    .sidebar-brand-title {
+      font-weight: 900;
+      font-size: 1.25rem;
+      color: #38BDF8;
+    }
+
+    .sidebar-nav {
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-grow: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      background: rgba(56, 189, 248, 0.1);
+      color: #38BDF8;
+    }
+
+    .nav-item.active {
+      background: #0288D1;
+      color: white;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    /* المحتوى الرئيسي */
+    .main-wrapper {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .topbar {
+      background: var(--sidebar-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      gap: 15px;
+    }
+
+    .topbar-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .admin-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #0288D1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+    }
+
+    .content-area {
+      padding: 28px;
+      flex-grow: 1;
+    }
+
+    /* البطاقات والإحصائيات */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 22px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      height: 4px;
+    }
+
+    .stat-blue::after { background: #38BDF8; }
+    .stat-green::after { background: #10B981; }
+    .stat-amber::after { background: #F59E0B; }
+    .stat-purple::after { background: #A855F7; }
+
+    .stat-icon {
+      width: 55px;
+      height: 55px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    /* الرسوم البيانية */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 992px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 22px;
+    }
+
+    .chart-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* الجداول */
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+
+    .table-header-tools {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+    }
+
+    .custom-table th {
+      background: #162032;
+      padding: 14px 18px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .custom-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .custom-table tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* النماذج والمدخلات */
+    .input-field {
+      background: #0F172A;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: #38BDF8;
+    }
+
+    .btn-action {
+      background: #0288D1;
+      color: white;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-action:hover {
+      background: #03A9F4;
+    }
+
+    .btn-action.success { background: #10B981; }
+    .btn-action.success:hover { background: #059669; }
+    .btn-action.danger { background: #EF4444; }
+    .btn-action.danger:hover { background: #DC2626; }
+    .btn-action.amber { background: #F59E0B; color: #000; }
+    .btn-action.amber:hover { background: #D97706; }
+    .btn-action.purple { background: #8B5CF6; }
+    .btn-action.purple:hover { background: #7C3AED; }
+    .btn-action.outline {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+    .btn-action.outline:hover {
+      border-color: #38BDF8;
+      color: #38BDF8;
+    }
+
+    /* بطاقات الابتكارات في لوحة الإدارة */
+    .admin-innovations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 22px;
+    }
+
+    .admin-inno-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .admin-inno-card.featured-card {
+      border-color: #F59E0B;
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+    }
+
+    .rating-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+    }
+
+    .star-select {
+      background: #0F172A;
+      color: #F59E0B;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-weight: 700;
+    }
+
+    /* النوافذ المنبثقة */
+    .admin-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .admin-modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #334155;
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    /* التبويبات */
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    /* قسم الباركود والبوستر المخصص للطباعة */
+    .qr-showcase-box {
+      background: #0F172A;
+      border: 2px dashed #0288D1;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .qr-image-display {
+      max-width: 260px;
+      background: white;
+      padding: 12px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      margin: 15px auto;
+      display: block;
+    }
+
+    /* بوستر الطباعة المدرسي */
+    @media print {
+      body * { visibility: hidden; }
+      #printablePosterArea, #printablePosterArea * { visibility: visible; }
+      #printablePosterArea {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: white !important;
+        color: #1E293B !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- شاشة الدخول للمشرف -->
+  <div id="loginOverlay">
+    <div class="login-box">
+      <div class="login-icon">🛡️</div>
+      <h2 class="login-title">حُرّاس المياه</h2>
+      <p class="login-desc">لوحة تحكم الإدارة المدرسية والتحكيم</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 14px; text-align: right;">
+        <div>
+          <label style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">اسم المستخدم:</label>
+          <input type="text" id="adminUser" class="input-field" style="width: 100%;" value="admin" />
+        </div>
+        <div>
+          <label style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">كلمة المرور:</label>
+          <input type="password" id="adminPass" class="input-field" style="width: 100%;" value="admin123" />
+        </div>
+        <div id="loginError" style="color: #EF4444; font-size: 0.85rem; display: none;"></div>
+        <button class="btn-action" onclick="performLogin()" style="width: 100%; justify-content: center; padding: 12px; margin-top: 8px;">
+          <span>تسجيل الدخول</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- الشريط الجانبي -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">💧</div>
+      <div>
+        <div class="sidebar-brand-title">حُرّاس المياه</div>
+        <div style="font-size: 0.75rem; color: #10B981; font-weight: 700;">الإدارة والتحكم الكامل</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="switchTab('stats', this)">
+        <span>📊</span>
+        <span>الإحصائيات والتقارير</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('participants', this)">
+        <span>👥</span>
+        <span>سجل وتعديل الطالبات</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('innovations', this)">
+        <span>💡</span>
+        <span>تحكيم وتعديل الابتكارات</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('qrcode', this)">
+        <span>📲</span>
+        <span>باركود مشاركة الطالبات (QR)</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('questions', this)">
+        <span>❓</span>
+        <span>إدارة أسئلة التحدي</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('export', this)">
+        <span>📤</span>
+        <span>تصدير البيانات (Excel)</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-action danger" onclick="performLogout()" style="width: 100%; justify-content: center;">
+        <span>🚪 تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- مساحة العمل الرئيسية -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title" id="pageTitle">لوحة الإحصائيات العامة</div>
+      
+      <div class="topbar-actions">
+        <!-- زر فتح الباركود السريع -->
+        <button class="btn-action purple" onclick="openQrModal()">
+          <span>📲 باركود الطالبات (QR)</span>
+        </button>
+
+        <a href="/" target="_blank" class="btn-action outline" style="font-size: 0.85rem;">
+          <span>🌐 واجهة الطالبات</span>
+        </a>
+
+        <div class="admin-avatar">م</div>
+        <span style="font-weight: 700; font-size: 0.95rem;">المشرف العام</span>
+      </div>
+    </header>
+
+    <main class="content-area">
+
+      <!-- ==================== تبويب الإحصائيات ==================== -->
+      <section id="tab-stats" class="tab-pane active">
+        <div class="stats-grid">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon" style="color: #38BDF8;">👥</div>
+            <div>
+              <div class="stat-value" id="statParticipants">0</div>
+              <div class="stat-label">إجمالي الطالبات المشاركات</div>
+            </div>
+          </div>
+
+          <div class="stat-card stat-green">
+            <div class="stat-icon" style="color: #10B981;">✅</div>
+            <div>
+              <div class="stat-value" id="statCompleted">0</div>
+              <div class="stat-label">أكملن التحدي كاملاً</div>
+            </div>
+          </div>
+
+          <div class="stat-card stat-amber">
+            <div class="stat-icon" style="color: #F59E0B;">💡</div>
+            <div>
+              <div class="stat-value" id="statInnovations">0</div>
+              <div class="stat-label">الابتكارات المقدمة</div>
+            </div>
+          </div>
+
+          <div class="stat-card stat-purple">
+            <div class="stat-icon" style="color: #A855F7;">⭐</div>
+            <div>
+              <div class="stat-value" id="statAvgScore">0</div>
+              <div class="stat-label">متوسط نقاط الاختبار</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-box">
+            <div class="chart-title">
+              <span>📈 تدفق المشاركات في الأيام الأخيرة</span>
+            </div>
+            <canvas id="dailyChart" height="130"></canvas>
+          </div>
+
+          <div class="chart-box">
+            <div class="chart-title">
+              <span>🥧 توزيع أنواع الابتكارات</span>
+            </div>
+            <canvas id="typesChart" height="130"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== تبويب الطالبات والمشاركات (تعديل وحذف) ==================== -->
+      <section id="tab-participants" class="tab-pane">
+        <div class="table-container">
+          <div class="table-header-tools">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <input type="text" id="filterParticipantSearch" class="input-field" placeholder="بحث بالاسم أو الكود..." oninput="loadParticipants()" />
+              <input type="text" id="filterParticipantSchool" class="input-field" placeholder="تصفية حسب المدرسة..." oninput="loadParticipants()" />
+            </div>
+            <button class="btn-action success" onclick="loadParticipants()">
+              <span>🔄 تحديث القائمة</span>
+            </button>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>كود المشاركة</th>
+                  <th>اسم الطالبة</th>
+                  <th>المدرسة</th>
+                  <th>الصف</th>
+                  <th>نقاط الاختبار</th>
+                  <th>المرحلة</th>
+                  <th>الابتكارات</th>
+                  <th>إجراءات الإدارة</th>
+                </tr>
+              </thead>
+              <tbody id="participantsTableBody">
+                <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">جاري تحميل البيانات...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== تبويب استعراض الابتكارات (تعديل وحذف وتحكيم) ==================== -->
+      <section id="tab-innovations" class="tab-pane">
+        <div class="table-header-tools" style="background: var(--card-bg); border-radius: var(--radius); margin-bottom: 20px;">
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="text" id="filterInnoSearch" class="input-field" placeholder="بحث باسم الابتكار أو الفكرة أو الطالبة..." oninput="loadInnovations()" />
+            <select id="filterInnoType" class="input-field" onchange="loadInnovations()">
+              <option value="">جميع الأنواع</option>
+              <option value="new">فكرة جديدة</option>
+              <option value="existing">تطوير ابتكار موجود</option>
+            </select>
+            <select id="filterInnoFeatured" class="input-field" onchange="loadInnovations()">
+              <option value="">جميع الحالات</option>
+              <option value="true">الابتكارات المميزة ⭐</option>
+            </select>
+          </div>
+          <button class="btn-action" onclick="loadInnovations()">
+            <span>🔄 تحديث الابتكارات</span>
+          </button>
+        </div>
+
+        <div class="admin-innovations-grid" id="innovationsGrid">
+          <!-- كروت الابتكارات -->
+        </div>
+      </section>
+
+      <!-- ==================== تبويب الباركود المخصص للمشاركة ==================== -->
+      <section id="tab-qrcode" class="tab-pane">
+        <div style="background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border-color); padding: 30px; max-width: 750px; margin: 0 auto; text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 10px;">📲</div>
+          <h2 style="color: #38BDF8; margin-bottom: 10px;">باركود وصول الطالبات للمنصة (QR Code)</h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">
+            امسحي هذا الباركود بكاميرا الجوال أو الآيباد للدخول المباشر إلى المنصة، أو اطبعي البوستر المدرسي وعلقيه في فصول وممرات المدرسة لحث الطالبات على المشاركة!
+          </p>
+
+          <div class="qr-showcase-box">
+            <div style="margin-bottom: 14px; text-align: right;">
+              <label style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">رابط المشاركة المضمن في الباركود:</label>
+              <div style="display: flex; gap: 10px;">
+                <input type="text" id="qrTargetUrlInput" class="input-field" style="flex-grow: 1; direction: ltr;" />
+                <button class="btn-action" onclick="refreshQrCode()"><span>توليد 🔄</span></button>
+              </div>
+              <small style="color: #38BDF8; font-size: 0.8rem; margin-top: 4px; display: block;">
+                💡 نصيحة: إذا كانت الطالبات متصلات بشبكة واي فاي المدرسة، استخدمي عنوان الـ IP الظاهر أعلاه ليفتح معهن على أجهزتهن مباشرة.
+              </small>
+            </div>
+
+            <img id="mainQrImage" class="qr-image-display" src="" alt="QR Code" />
+
+            <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
+              <button class="btn-action success" onclick="downloadQrImage()">
+                <span>📥 تحميل صورة الباركود (PNG)</span>
+              </button>
+              <button class="btn-action amber" onclick="printQrPoster()">
+                <span>🖨️ طباعة ملصق الباركود المدرسي (Poster)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== تبويب إدارة الأسئلة ==================== -->
+      <section id="tab-questions" class="tab-pane">
+        <div class="table-container">
+          <div class="table-header-tools">
+            <h3 style="color: #38BDF8;">قائمة أسئلة تحدي «اكتشفي المشكلة»</h3>
+            <button class="btn-action success" onclick="openAddQuestionModal()">
+              <span>➕ إضافة سؤال جديد</span>
+            </button>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>نص السؤال</th>
+                  <th>النوع</th>
+                  <th>النقاط</th>
+                  <th>الإجابة الصحيحة</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="questionsTableBody">
+                <!-- جدول الأسئلة -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== تبويب التصدير ==================== -->
+      <section id="tab-export" class="tab-pane">
+        <div style="background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border-color); padding: 35px; max-width: 650px; margin: 0 auto; text-align: center;">
+          <div style="font-size: 4rem; margin-bottom: 12px;">📊</div>
+          <h2 style="color: #38BDF8; margin-bottom: 10px;">تصدير النتائج والمشاركات إلى Excel</h2>
+          <p style="color: var(--text-muted); line-height: 1.7; margin-bottom: 25px;">
+            يمكنك تحميل ملف متكامل بصيغة CSV المتوافقة مع Microsoft Excel بترميز UTF-8 معتمد للغة العربية، يحتوي على بيانات الطالبات والدرجات وتفاصيل الابتكارات والتقييمات.
+          </p>
+          <a href="/api/admin/export" class="btn-action success" style="padding: 14px 28px; font-size: 1.1rem; text-decoration: none;">
+            <span>📥 تحميل ملف Excel / CSV الآن</span>
+          </a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== نافذة الباركود السريعة ==================== -->
+  <div class="admin-modal" id="qrQuickModal">
+    <div class="admin-modal-content" style="max-width: 500px; text-align: center;">
+      <button class="modal-close" onclick="closeQrModal()">&times;</button>
+      <div style="font-size: 2.5rem; margin-bottom: 5px;">📲</div>
+      <h3 style="color: #38BDF8; margin-bottom: 8px;">امسحي الباركود وابدئي التحدي</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">وجهي كاميرا الجوال لمسح الرمز والانتقال للمنصة مباشرة</p>
+      
+      <img id="quickQrImg" class="qr-image-display" src="" alt="QR Code" />
+      <div style="font-family: monospace; font-size: 0.9rem; color: #38BDF8; margin-bottom: 15px; direction: ltr;" id="quickQrLinkText"></div>
+
+      <div style="display: flex; justify-content: center; gap: 10px;">
+        <button class="btn-action success" onclick="downloadQrImage()"><span>تحميل الصورة 📥</span></button>
+        <button class="btn-action amber" onclick="printQrPoster()"><span>طباعة الملصق 🖨️</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== نافذة تعديل بيانات الطالبة ==================== -->
+  <div class="admin-modal" id="editParticipantModal">
+    <div class="admin-modal-content" style="max-width: 500px;">
+      <button class="modal-close" onclick="closeEditParticipantModal()">&times;</button>
+      <h3 style="color: #38BDF8; margin-bottom: 16px;">✏️ تعديل بيانات مشاركة الطالبة</h3>
+      
+      <div style="display: flex; flex-direction: column; gap: 14px; text-align: right;">
+        <input type="hidden" id="editPartId" />
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">اسم الطالبة:</label>
+          <input type="text" id="editPartName" class="input-field" style="width: 100%;" />
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">المدرسة:</label>
+          <input type="text" id="editPartSchool" class="input-field" style="width: 100%;" />
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">الصف الدراسي:</label>
+          <input type="text" id="editPartGrade" class="input-field" style="width: 100%;" />
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">نقاط الاختبار:</label>
+          <input type="number" id="editPartScore" class="input-field" style="width: 100%;" />
+        </div>
+
+        <button class="btn-action success" onclick="saveParticipantChanges()" style="justify-content: center; margin-top: 10px;">
+          <span>💾 حفظ التعديلات</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== نافذة تعديل الابتكار / الطلب ==================== -->
+  <div class="admin-modal" id="editInnovationModal">
+    <div class="admin-modal-content">
+      <button class="modal-close" onclick="closeEditInnovationModal()">&times;</button>
+      <h3 style="color: #38BDF8; margin-bottom: 16px;">✏️ تعديل تفاصيل الابتكار / الطلب</h3>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; text-align: right;">
+        <input type="hidden" id="editInnoId" />
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">اسم الابتكار:</label>
+            <input type="text" id="editInnoName" class="input-field" style="width: 100%;" />
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">النوع:</label>
+            <select id="editInnoType" class="input-field" style="width: 100%;">
+              <option value="new">فكرة جديدة</option>
+              <option value="existing">تطوير ابتكار موجود</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">وصف المشكلة المعالجة:</label>
+          <textarea id="editInnoProblem" class="input-field" style="width: 100%; min-height: 65px;"></textarea>
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">فكرة الابتكار المقترحة:</label>
+          <textarea id="editInnoIdea" class="input-field" style="width: 100%; min-height: 65px;"></textarea>
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">كيف يعمل الابتكار؟:</label>
+          <textarea id="editInnoHowWorks" class="input-field" style="width: 100%; min-height: 65px;"></textarea>
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">استخدام التكنولوجيا والذكاء الاصطناعي:</label>
+          <textarea id="editInnoTech" class="input-field" style="width: 100%; min-height: 60px;"></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">أثر توفير المياه:</label>
+            <input type="text" id="editInnoImpact" class="input-field" style="width: 100%;" />
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">الفوائد المتوقعة:</label>
+            <input type="text" id="editInnoBenefits" class="input-field" style="width: 100%;" />
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">ملاحظات الإدارة:</label>
+          <input type="text" id="editInnoNotes" class="input-field" style="width: 100%;" />
+        </div>
+
+        <button class="btn-action success" onclick="saveInnovationChanges()" style="justify-content: center; margin-top: 10px;">
+          <span>💾 حفظ تعديلات الابتكار</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== نافذة تفاصيل إجابات الطالبة ==================== -->
+  <div class="admin-modal" id="studentAnswersModal">
+    <div class="admin-modal-content">
+      <button class="modal-close" onclick="closeStudentAnswersModal()">&times;</button>
+      <h3 style="color: #38BDF8; margin-bottom: 6px;" id="ansModalStudentName">سجل إجابات الطالبة</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 18px;" id="ansModalSubTitle"></p>
+
+      <div id="answersListContainer" style="display: flex; flex-direction: column; gap: 14px;"></div>
+    </div>
+  </div>
+
+  <!-- ==================== نافذة إضافة/تعديل سؤال ==================== -->
+  <div class="admin-modal" id="questionEditModal">
+    <div class="admin-modal-content">
+      <button class="modal-close" onclick="closeQuestionModal()">&times;</button>
+      <h3 style="color: #38BDF8; margin-bottom: 16px;" id="qModalTitle">إضافة سؤال جديد</h3>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; text-align: right;">
+        <input type="hidden" id="editQId" />
+        
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">نص السؤال:</label>
+          <textarea id="editQText" class="input-field" style="width: 100%; min-height: 70px;"></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">نوع السؤال:</label>
+            <select id="editQType" class="input-field" style="width: 100%;">
+              <option value="multiple">اختيار من متعدد</option>
+              <option value="truefalse">صح أو خطأ</option>
+              <option value="scenario">موقف واقعي</option>
+              <option value="image">سؤال مصور</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">النقاط:</label>
+            <input type="number" id="editQPoints" class="input-field" style="width: 100%;" value="15" />
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">الخيارات (مفصولة بفاصلة | أو سطر جديد):</label>
+          <textarea id="editQOptions" class="input-field" style="width: 100%; min-height: 70px;" placeholder="الخيار الأول | الخيار الثاني | الخيار الثالث"></textarea>
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">الإجابة الصحيحة تماماً:</label>
+          <input type="text" id="editQCorrect" class="input-field" style="width: 100%;" />
+        </div>
+
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">الشرح والتفسير التعليمي بعد الإجابة:</label>
+          <textarea id="editQExplanation" class="input-field" style="width: 100%; min-height: 70px;"></textarea>
+        </div>
+
+        <button class="btn-action success" onclick="saveQuestion()" style="margin-top: 10px; justify-content: center;">
+          <span>💾 حفظ السؤال</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- منطقة بوستر الطباعة المدرسي المخصص -->
+  <div id="printablePosterArea" style="display: none;">
+    <div style="border: 10px solid #0288D1; border-radius: 25px; padding: 40px; max-width: 700px; margin: 0 auto; background: white;">
+      <div style="font-size: 4rem;">💧</div>
+      <h1 style="font-size: 2.8rem; color: #01579B; margin: 10px 0;">حُرّاس المياه – ابتكري الحل 🌱</h1>
+      <h2 style="font-size: 1.5rem; color: #10B981; margin-bottom: 25px;">تحدي ريادة الأعمال الخضراء والذكاء الاصطناعي</h2>
+      
+      <div style="background: #F1F8E9; border: 3px dashed #4CAF50; border-radius: 20px; padding: 25px; display: inline-block; margin-bottom: 20px;">
+        <img id="posterQrImage" style="width: 280px; height: 280px;" src="" alt="QR" />
+      </div>
+
+      <h3 style="font-size: 1.8rem; color: #D32F2F; margin-bottom: 10px;">📲 امسحي الباركود بكاميرا هاتفكِ الآن!</h3>
+      <p style="font-size: 1.2rem; color: #546E7A; line-height: 1.6;">
+        شاركي معنا في حماية مياه مدرستنا، أجيبي على الأسئلة التفاعلية، وابتكري حلاً ذكياً واحصلِي على شهادتكِ الرقمية!
+      </p>
+      
+      <div style="margin-top: 25px; font-weight: 700; color: #0288D1; direction: ltr; font-size: 1.1rem;" id="posterUrlText"></div>
+    </div>
+  </div>
+
+  <script>
+    let dailyChartInstance = null;
+    let typesChartInstance = null;
+    let currentQrDataUrl = '';
+    let currentTargetUrl = '';
+
+    // التحقق من الجلسة والدخول
+    async function performLogin() {
+      const u = document.getElementById('adminUser').value;
+      const p = document.getElementById('adminPass').value;
+      const errBox = document.getElementById('loginError');
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('loginOverlay').style.display = 'none';
+          initDashboard();
+        } else {
+          errBox.textContent = data.error || 'فشل تسجيل الدخول';
+          errBox.style.display = 'block';
+        }
+      } catch (e) {
+        errBox.textContent = 'تعذر الاتصال بالخادم';
+        errBox.style.display = 'block';
+      }
+    }
+
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/admin/check');
+        const data = await res.json();
+        if (data.isAdmin) {
+          document.getElementById('loginOverlay').style.display = 'none';
+          initDashboard();
+        } else {
+          document.getElementById('loginOverlay').style.display = 'flex';
+        }
+      } catch (e) {
+        document.getElementById('loginOverlay').style.display = 'flex';
+      }
+    }
+
+    async function performLogout() {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      location.reload();
+    }
+
+    // التنقل بين التبويبات
+    function switchTab(tabId, el) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+      const target = document.getElementById('tab-' + tabId);
+      if (target) target.classList.add('active');
+      if (el) el.classList.add('active');
+
+      const titles = {
+        stats: 'لوحة الإحصائيات العامة والتقارير',
+        participants: 'سجل وإدارة وتعديل الطالبات',
+        innovations: 'استعراض وتحكيم وتعديل الابتكارات',
+        qrcode: 'باركود وصول الطالبات للمنصة (QR Code)',
+        questions: 'إدارة وتعديل أسئلة التحدي',
+        export: 'تصدير البيانات المعتمدة'
+      };
+      document.getElementById('pageTitle').textContent = titles[tabId] || 'لوحة الإدارة';
+
+      if (tabId === 'stats') loadStats();
+      if (tabId === 'participants') loadParticipants();
+      if (tabId === 'innovations') loadInnovations();
+      if (tabId === 'qrcode') loadQrCode();
+      if (tabId === 'questions') loadQuestionsList();
+    }
+
+    function initDashboard() {
+      loadStats();
+      loadQrCode();
+    }
+
+    // الإحصائيات
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        const d = await res.json();
+
+        document.getElementById('statParticipants').textContent = d.totalParticipants || 0;
+        document.getElementById('statCompleted').textContent = d.completedChallenge || 0;
+        document.getElementById('statInnovations').textContent = d.totalInnovations || 0;
+        document.getElementById('statAvgScore').textContent = (d.avgScore || 0) + ' 💧';
+
+        renderCharts(d);
+      } catch (e) {
+        console.error('فشل جلب الإحصائيات:', e);
+      }
+    }
+
+    function renderCharts(d) {
+      const ctx1 = document.getElementById('dailyChart').getContext('2d');
+      const dailyLabels = (d.dailyParticipants || []).map(item => item.date);
+      const dailyData = (d.dailyParticipants || []).map(item => item.cnt);
+
+      if (dailyChartInstance) dailyChartInstance.destroy();
+      dailyChartInstance = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: dailyLabels.length ? dailyLabels : ['اليوم'],
+          datasets: [{
+            label: 'عدد المشاركات',
+            data: dailyData.length ? dailyData : [d.totalParticipants || 0],
+            borderColor: '#38BDF8',
+            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#334155' } },
+            x: { grid: { color: '#334155' } }
+          }
+        }
+      });
+
+      const ctx2 = document.getElementById('typesChart').getContext('2d');
+      const typeCounts = { new: 0, existing: 0 };
+      (d.innovationsByType || []).forEach(t => {
+        if (t.type === 'new') typeCounts.new = t.cnt;
+        if (t.type === 'existing') typeCounts.existing = t.cnt;
+      });
+
+      if (typesChartInstance) typesChartInstance.destroy();
+      typesChartInstance = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['أفكار جديدة كلياً', 'تطوير ابتكار موجود'],
+          datasets: [{
+            data: [typeCounts.new, typeCounts.existing],
+            backgroundColor: ['#10B981', '#0288D1'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94A3B8' } }
+          }
+        }
+      });
+    }
+
+    // ==================== الباركود (QR Code) ====================
+    async function loadQrCode(customUrl) {
+      try {
+        let url = customUrl;
+        if (!url) {
+          const sRes = await fetch('/api/server-info');
+          const sData = await sRes.json();
+          url = sData.recommendedUrl || window.location.origin;
+        }
+
+        currentTargetUrl = url;
+        document.getElementById('qrTargetUrlInput').value = url;
+
+        const res = await fetch(`/api/qrcode?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        if (data.success) {
+          currentQrDataUrl = data.qrDataUrl;
+          document.getElementById('mainQrImage').src = data.qrDataUrl;
+          document.getElementById('quickQrImg').src = data.qrDataUrl;
+          document.getElementById('quickQrLinkText').textContent = url;
+          document.getElementById('posterQrImage').src = data.qrDataUrl;
+          document.getElementById('posterUrlText').textContent = url;
+        }
+      } catch (e) {
+        console.error('فشل توليد الباركود:', e);
+      }
+    }
+
+    function refreshQrCode() {
+      const inputUrl = document.getElementById('qrTargetUrlInput').value.trim();
+      loadQrCode(inputUrl);
+    }
+
+    function openQrModal() {
+      document.getElementById('qrQuickModal').style.display = 'flex';
+      if (!currentQrDataUrl) loadQrCode();
+    }
+
+    function closeQrModal() {
+      document.getElementById('qrQuickModal').style.display = 'none';
+    }
+
+    function downloadQrImage() {
+      if (!currentQrDataUrl) return;
+      const a = document.createElement('a');
+      a.href = currentQrDataUrl;
+      a.download = 'water_guardians_qr.png';
+      a.click();
+    }
+
+    function printQrPoster() {
+      document.getElementById('printablePosterArea').style.display = 'block';
+      window.print();
+      setTimeout(() => {
+        document.getElementById('printablePosterArea').style.display = 'none';
+      }, 1000);
+    }
+
+    // ==================== إدارة وتعديل وحذف الطالبات ====================
+    let allParticipantsData = {};
+
+    async function loadParticipants() {
+      const search = document.getElementById('filterParticipantSearch').value;
+      const school = document.getElementById('filterParticipantSchool').value;
+      const tbody = document.getElementById('participantsTableBody');
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">جاري جلب القائمة...</td></tr>';
+
+      try {
+        const res = await fetch(`/api/admin/participants?search=${encodeURIComponent(search)}&school=${encodeURIComponent(school)}`);
+        const data = await res.json();
+
+        if (!data.participants || data.participants.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">لا توجد طالبات مسجلات حتى الآن</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        allParticipantsData = {};
+
+        data.participants.forEach(p => {
+          allParticipantsData[p.id] = p;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="font-family: monospace; font-weight: 700; color: #38BDF8;">${p.participation_code}</td>
+            <td><strong>${p.name || 'بدون اسم'}</strong></td>
+            <td>${p.school || '—'}</td>
+            <td>${p.grade || '—'}</td>
+            <td style="color: #F59E0B; font-weight: 800;">${p.quiz_score} 💧</td>
+            <td>المرحلة ${p.stage_completed} / 3</td>
+            <td><span style="background: rgba(16, 185, 129, 0.15); color: #10B981; padding: 2px 8px; border-radius: 4px; font-weight: 700;">${p.innovation_count} ابتكار</span></td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-action outline" onclick="viewStudentAnswers(${p.id})" title="عرض إجابات الاختبار" style="padding: 5px 9px;">
+                  <span>📝 الإجابات</span>
+                </button>
+                <button class="btn-action" onclick="openEditParticipant(${p.id})" title="تعديل بيانات الطالبة" style="padding: 5px 9px;">
+                  <span>✏️ تعديل</span>
+                </button>
+                <button class="btn-action danger" onclick="deleteParticipant(${p.id}, '${p.name}')" title="حذف المشاركة" style="padding: 5px 9px;">
+                  <span>🗑️</span>
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #EF4444;">تعذر تحميل السجل</td></tr>';
+      }
+    }
+
+    function openEditParticipant(id) {
+      const p = allParticipantsData[id];
+      if (!p) return;
+
+      document.getElementById('editPartId').value = p.id;
+      document.getElementById('editPartName').value = p.name || '';
+      document.getElementById('editPartSchool').value = p.school || '';
+      document.getElementById('editPartGrade').value = p.grade || '';
+      document.getElementById('editPartScore').value = p.quiz_score || 0;
+
+      document.getElementById('editParticipantModal').style.display = 'flex';
+    }
+
+    function closeEditParticipantModal() {
+      document.getElementById('editParticipantModal').style.display = 'none';
+    }
+
+    async function saveParticipantChanges() {
+      const id = document.getElementById('editPartId').value;
+      const name = document.getElementById('editPartName').value.trim();
+      const school = document.getElementById('editPartSchool').value.trim();
+      const grade = document.getElementById('editPartGrade').value.trim();
+      const quiz_score = document.getElementById('editPartScore').value;
+
+      try {
+        const res = await fetch(`/api/admin/participant/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, school, grade, quiz_score })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('تم حفظ تعديلات بيانات الطالبة بنجاح! ✨');
+          closeEditParticipantModal();
+          loadParticipants();
+        }
+      } catch (e) {
+        alert('تعذر حفظ التعديلات');
+      }
+    }
+
+    async function deleteParticipant(id, name) {
+      if (!confirm(`تحذير: هل أنتِ متأكدة من حذف مشاركة الطالبة (${name}) بالكامل مع جميع إجاباتها وابتكاراتها؟`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/admin/participant/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          alert('تم حذف المشاركة وسجلاتها بنجاح');
+          loadParticipants();
+          loadStats();
+        }
+      } catch (e) {
+        alert('تعذر حذف المشاركة');
+      }
+    }
+
+    // عرض إجابات الطالبة
+    async function viewStudentAnswers(studentId) {
+      const modal = document.getElementById('studentAnswersModal');
+      const list = document.getElementById('answersListContainer');
+      modal.style.display = 'flex';
+      list.innerHTML = '<p style="text-align:center;">جاري جلب تفاصيل الإجابات...</p>';
+
+      try {
+        const res = await fetch(`/api/admin/participant/${studentId}/answers`);
+        const data = await res.json();
+
+        document.getElementById('ansModalStudentName').textContent = `سجل إجابات الطالبة: ${data.participant.name}`;
+        document.getElementById('ansModalSubTitle').textContent = `المدرسة: ${data.participant.school} | الكود: ${data.participant.participation_code} | إجمالي النقاط: ${data.participant.quiz_score} نقطة`;
+
+        if (!data.answers || data.answers.length === 0) {
+          list.innerHTML = '<p style="text-align:center; color: var(--text-muted);">لم تقم الطالبة بحل أي سؤال بعد.</p>';
+          return;
+        }
+
+        list.innerHTML = '';
+        data.answers.forEach((ans, idx) => {
+          const box = document.createElement('div');
+          box.style.background = '#0F172A';
+          box.style.border = `1px solid ${ans.is_correct ? '#10B981' : '#EF4444'}`;
+          box.style.borderRadius = '10px';
+          box.style.padding = '14px';
+
+          box.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <strong>السؤال ${idx + 1}: ${ans.question_text}</strong>
+              <span style="color:${ans.is_correct ? '#10B981' : '#EF4444'}; font-weight:800;">
+                ${ans.is_correct ? '✅ إجابة صحيحة' : '❌ إجابة خاطئة'} (+${ans.points_earned})
+              </span>
+            </div>
+            <div style="font-size:0.9rem; margin-bottom:4px;">
+              <span style="color:var(--text-muted);">إجابة الطالبة:</span> 
+              <span style="font-weight:700;">${ans.answer}</span>
+            </div>
+            ${!ans.is_correct ? `
+              <div style="font-size:0.9rem; margin-bottom:4px; color:#10B981;">
+                <span>الإجابة الصحيحة:</span> <strong>${ans.correct_answer}</strong>
+              </div>
+            ` : ''}
+            <div style="font-size:0.85rem; color:var(--text-muted); background:rgba(255,255,255,0.03); padding:8px; border-radius:6px; margin-top:6px;">
+              💡 <em>${ans.explanation || ''}</em>
+            </div>
+          `;
+          list.appendChild(box);
+        });
+      } catch (err) {
+        list.innerHTML = '<p style="text-align:center; color:#EF4444;">تعذر تحميل إجابات الطالبة</p>';
+      }
+    }
+
+    function closeStudentAnswersModal() {
+      document.getElementById('studentAnswersModal').style.display = 'none';
+    }
+
+    // ==================== استعراض وتعديل وحذف الابتكارات ====================
+    let allInnovationsData = {};
+
+    async function loadInnovations() {
+      const search = document.getElementById('filterInnoSearch').value;
+      const type = document.getElementById('filterInnoType').value;
+      const featured = document.getElementById('filterInnoFeatured').value;
+      const grid = document.getElementById('innovationsGrid');
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">جاري جلب الابتكارات...</div>';
+
+      try {
+        const res = await fetch(`/api/admin/innovations?search=${encodeURIComponent(search)}&type=${encodeURIComponent(type)}&featured=${encodeURIComponent(featured)}`);
+        const data = await res.json();
+
+        if (!data.innovations || data.innovations.length === 0) {
+          grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">لا توجد ابتكارات مسجلة تطابق التصفية</div>';
+          return;
+        }
+
+        grid.innerHTML = '';
+        allInnovationsData = {};
+
+        data.innovations.forEach(inno => {
+          allInnovationsData[inno.id] = inno;
+          const card = document.createElement('div');
+          card.className = 'admin-inno-card' + (inno.is_featured ? ' featured-card' : '');
+
+          card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+              <div>
+                <h3 style="color:#38BDF8; font-size:1.25rem; margin-bottom:4px;">${inno.innovation_name}</h3>
+                <div style="font-size:0.85rem; color:var(--text-muted);">
+                  الطالبة: <strong>${inno.name || 'بدون اسم'}</strong> (${inno.school || 'المدرسة'})
+                </div>
+              </div>
+              <span style="background:${inno.type === 'new' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(2, 136, 209, 0.2)'}; color:${inno.type === 'new' ? '#10B981' : '#38BDF8'}; padding:3px 10px; border-radius:50px; font-size:0.75rem; font-weight:700;">
+                ${inno.type === 'new' ? '💡 فكرة جديدة' : '🔄 تطوير ابتكار'}
+              </span>
+            </div>
+
+            <div style="background:#0F172A; border-radius:8px; padding:12px; margin-bottom:14px; font-size:0.9rem; line-height:1.6;">
+              <div style="margin-bottom:6px;"><strong style="color:#EF4444;">المشكلة:</strong> ${inno.problem_description || '—'}</div>
+              <div><strong style="color:#10B981;">فكرة الحل:</strong> ${inno.innovation_idea || inno.how_it_works || '—'}</div>
+              ${inno.technology_use ? `<div style="margin-top:6px;"><strong style="color:#A855F7;">التقنية والذكاء الاصطناعي:</strong> ${inno.technology_use}</div>` : ''}
+              ${inno.water_saving_impact ? `<div style="margin-top:6px;"><strong style="color:#38BDF8;">أثر التوفير:</strong> ${inno.water_saving_impact}</div>` : ''}
+            </div>
+
+            ${inno.image_path ? `
+              <div style="text-align:center; margin-bottom:14px;">
+                <img src="${inno.image_path}" style="max-height:160px; max-width:100%; border-radius:8px; border:1px solid var(--border-color); cursor:pointer;" onclick="window.open('${inno.image_path}')" title="اضغطي للتكبير" />
+              </div>
+            ` : ''}
+
+            <!-- تقييم التحكيم -->
+            <div style="border-top:1px solid var(--border-color); padding-top:14px; margin-top:auto;">
+              <div class="rating-row">
+                <span>الإبداع والأصالة:</span>
+                <select class="star-select" id="rate_creat_${inno.id}">
+                  ${[1,2,3,4,5].map(v => `<option value="${v}" ${inno.rating_creativity == v ? 'selected' : ''}>${'★'.repeat(v)} (${v})</option>`).join('')}
+                </select>
+              </div>
+              <div class="rating-row">
+                <span>الأثر البيئي والمائي:</span>
+                <select class="star-select" id="rate_env_${inno.id}">
+                  ${[1,2,3,4,5].map(v => `<option value="${v}" ${inno.rating_environmental == v ? 'selected' : ''}>${'★'.repeat(v)} (${v})</option>`).join('')}
+                </select>
+              </div>
+              <div class="rating-row">
+                <span>إمكانية التطبيق:</span>
+                <select class="star-select" id="rate_feas_${inno.id}">
+                  ${[1,2,3,4,5].map(v => `<option value="${v}" ${inno.rating_feasibility == v ? 'selected' : ''}>${'★'.repeat(v)} (${v})</option>`).join('')}
+                </select>
+              </div>
+              <div class="rating-row">
+                <span>استخدام التكنولوجيا:</span>
+                <select class="star-select" id="rate_tech_${inno.id}">
+                  ${[1,2,3,4,5].map(v => `<option value="${v}" ${inno.rating_technology == v ? 'selected' : ''}>${'★'.repeat(v)} (${v})</option>`).join('')}
+                </select>
+              </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px;">
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:0.85rem; font-weight:700; color:#F59E0B;">
+                  <input type="checkbox" id="rate_feat_${inno.id}" ${inno.is_featured ? 'checked' : ''} />
+                  <span>ابتكار مميز ⭐</span>
+                </label>
+                <button class="btn-action success" onclick="saveRating(${inno.id})" style="padding:6px 12px; font-size:0.85rem;">
+                  <span>حفظ التقييم</span>
+                </button>
+              </div>
+
+              <!-- أزرار الصلاحيات الموسعة: تعديل وحذف الطلب -->
+              <div style="display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px dashed var(--border-color);">
+                <button class="btn-action amber" onclick="openEditInnovation(${inno.id})" style="flex:1; justify-content:center; padding:7px;">
+                  <span>✏️ تعديل الطلب</span>
+                </button>
+                <button class="btn-action danger" onclick="deleteInnovation(${inno.id}, '${inno.innovation_name}')" style="padding:7px 14px;" title="حذف هذا الابتكار">
+                  <span>🗑️ حذف</span>
+                </button>
+              </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #EF4444;">تعذر تحميل الابتكارات</div>';
+      }
+    }
+
+    // فتح نافذة تعديل الابتكار
+    function openEditInnovation(id) {
+      const inno = allInnovationsData[id];
+      if (!inno) return;
+
+      document.getElementById('editInnoId').value = inno.id;
+      document.getElementById('editInnoName').value = inno.innovation_name || '';
+      document.getElementById('editInnoType').value = inno.type || 'new';
+      document.getElementById('editInnoProblem').value = inno.problem_description || '';
+      document.getElementById('editInnoIdea').value = inno.innovation_idea || '';
+      document.getElementById('editInnoHowWorks').value = inno.how_it_works || '';
+      document.getElementById('editInnoTech').value = inno.technology_use || '';
+      document.getElementById('editInnoImpact').value = inno.water_saving_impact || '';
+      document.getElementById('editInnoBenefits').value = inno.expected_benefits || '';
+      document.getElementById('editInnoNotes').value = inno.admin_notes || '';
+
+      document.getElementById('editInnovationModal').style.display = 'flex';
+    }
+
+    function closeEditInnovationModal() {
+      document.getElementById('editInnovationModal').style.display = 'none';
+    }
+
+    // حفظ تعديلات الابتكار
+    async function saveInnovationChanges() {
+      const id = document.getElementById('editInnoId').value;
+      const inno = allInnovationsData[id] || {};
+
+      const payload = {
+        innovation_name: document.getElementById('editInnoName').value.trim(),
+        type: document.getElementById('editInnoType').value,
+        problem_description: document.getElementById('editInnoProblem').value.trim(),
+        innovation_idea: document.getElementById('editInnoIdea').value.trim(),
+        how_it_works: document.getElementById('editInnoHowWorks').value.trim(),
+        technology_use: document.getElementById('editInnoTech').value.trim(),
+        water_saving_impact: document.getElementById('editInnoImpact').value.trim(),
+        expected_benefits: document.getElementById('editInnoBenefits').value.trim(),
+        admin_notes: document.getElementById('editInnoNotes').value.trim(),
+        rating_creativity: inno.rating_creativity || 0,
+        rating_environmental: inno.rating_environmental || 0,
+        rating_feasibility: inno.rating_feasibility || 0,
+        rating_technology: inno.rating_technology || 0,
+        is_featured: inno.is_featured || 0
+      };
+
+      try {
+        const res = await fetch(`/api/admin/innovation/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('تم حفظ كافة تعديلات الابتكار بنجاح! ✨');
+          closeEditInnovationModal();
+          loadInnovations();
+        }
+      } catch (e) {
+        alert('تعذر حفظ التعديلات');
+      }
+    }
+
+    // حذف الابتكار
+    async function deleteInnovation(id, name) {
+      if (!confirm(`هل أنتِ متأكدة من حذف الابتكار/الطلب (${name})؟`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/admin/innovation/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          alert('تم حذف الابتكار بنجاح');
+          loadInnovations();
+          loadStats();
+        }
+      } catch (e) {
+        alert('تعذر حذف الابتكار');
+      }
+    }
+
+    // حفظ التقييم السريع
+    async function saveRating(innoId) {
+      const c = document.getElementById(`rate_creat_${innoId}`).value;
+      const e = document.getElementById(`rate_env_${innoId}`).value;
+      const f = document.getElementById(`rate_feas_${innoId}`).value;
+      const t = document.getElementById(`rate_tech_${innoId}`).value;
+      const featured = document.getElementById(`rate_feat_${innoId}`).checked;
+
+      try {
+        const res = await fetch(`/api/admin/innovation/${innoId}/rate`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rating_creativity: c,
+            rating_environmental: e,
+            rating_feasibility: f,
+            rating_technology: t,
+            is_featured: featured
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('تم حفظ تقييم الابتكار بنجاح! ⭐');
+          loadInnovations();
+        }
+      } catch (err) {
+        alert('تعذر حفظ التقييم');
+      }
+    }
+
+    // ==================== إدارة الأسئلة ====================
+    async function loadQuestionsList() {
+      const tbody = document.getElementById('questionsTableBody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري جلب الأسئلة...</td></tr>';
+
+      try {
+        const res = await fetch('/api/admin/questions');
+        const list = await res.json();
+
+        tbody.innerHTML = '';
+        list.forEach((q, idx) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td style="font-weight:700;">${q.question_text}</td>
+            <td><span style="background:rgba(56, 189, 248, 0.1); color:#38BDF8; padding:2px 8px; border-radius:4px; font-size:0.8rem;">${q.question_type}</span></td>
+            <td>${q.points}</td>
+            <td style="color:#10B981; font-weight:700;">${q.correct_answer}</td>
+            <td>
+              <button class="btn-action ${q.is_active ? 'success' : 'outline'}" onclick="toggleQuestionStatus(${q.id}, ${q.is_active ? 0 : 1})" style="padding:4px 8px; font-size:0.75rem;">
+                ${q.is_active ? 'مفعل' : 'معطل'}
+              </button>
+            </td>
+            <td>
+              <button class="btn-action danger" onclick="deleteQuestion(${q.id})" style="padding:4px 8px; font-size:0.75rem;">
+                <span>حذف</span>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#EF4444;">تعذر تحميل الأسئلة</td></tr>';
+      }
+    }
+
+    async function toggleQuestionStatus(id, newStatus) {
+      await fetch(`/api/admin/question/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: newStatus })
+      });
+      loadQuestionsList();
+    }
+
+    async function deleteQuestion(id) {
+      if (!confirm('هل أنتِ متأكدة من حذف هذا السؤال؟')) return;
+      await fetch(`/api/admin/question/${id}`, { method: 'DELETE' });
+      loadQuestionsList();
+    }
+
+    function openAddQuestionModal() {
+      document.getElementById('editQId').value = '';
+      document.getElementById('editQText').value = '';
+      document.getElementById('editQCorrect').value = '';
+      document.getElementById('editQExplanation').value = '';
+      document.getElementById('editQOptions').value = '';
+      document.getElementById('qModalTitle').textContent = 'إضافة سؤال جديد للتحدي';
+      document.getElementById('questionEditModal').style.display = 'flex';
+    }
+
+    function closeQuestionModal() {
+      document.getElementById('questionEditModal').style.display = 'none';
+    }
+
+    async function saveQuestion() {
+      const qText = document.getElementById('editQText').value.trim();
+      const qType = document.getElementById('editQType').value;
+      const qPoints = document.getElementById('editQPoints').value;
+      const qOptionsRaw = document.getElementById('editQOptions').value.trim();
+      const qCorrect = document.getElementById('editQCorrect').value.trim();
+      const qExplanation = document.getElementById('editQExplanation').value.trim();
+
+      if (!qText || !qCorrect) {
+        alert('يرجى تعبئة نص السؤال والإجابة الصحيحة');
+        return;
+      }
+
+      const opts = qOptionsRaw.split(/[\n|]/).map(s => s.trim()).filter(s => s.length > 0);
+
+      try {
+        const res = await fetch('/api/admin/question', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            stage: 1,
+            question_text: qText,
+            question_type: qType,
+            options: opts,
+            correct_answer: qCorrect,
+            explanation: qExplanation,
+            points: qPoints
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('تمت إضافة السؤال بنجاح!');
+          closeQuestionModal();
+          loadQuestionsList();
+        }
+      } catch (e) {
+        alert('حدث خطأ أثناء حفظ السؤال');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+    });
+  </script>
+</body>
+</html>
