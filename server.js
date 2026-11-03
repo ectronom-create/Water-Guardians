@@ -1130,7 +1130,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+  res.redirect('/#admin');
 });
 
 app.use((err, req, res, next) => {

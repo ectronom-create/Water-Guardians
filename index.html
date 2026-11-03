@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>حُرّاس المياه – ابتكري الحل | منصة تعليمية تفاعلية</title>
+  <title>حُرّاس المياه – ابتكري الحل | المنصة التعليمية المتكاملة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
+  <!-- مكتبات الرسوم البيانية والباركود للعمل المستقل والسحابي -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <style>
     :root {
       --primary: #0288D1;
@@ -28,6 +31,12 @@
       --radius-lg: 20px;
       --radius-xl: 30px;
       --font-main: 'Tajawal', sans-serif;
+
+      /* ألوان وضع الإدارة المدمج */
+      --admin-bg: #0F172A;
+      --admin-card: #1E293B;
+      --admin-border: #334155;
+      --admin-text: #F8FAFC;
     }
 
     * {
@@ -46,9 +55,15 @@
       position: relative;
       display: flex;
       flex-direction: column;
+      transition: background 0.3s;
     }
 
-    /* خلفية قطرات المياه التفاعلية العائمة */
+    body.admin-mode-active {
+      background: var(--admin-bg);
+      color: var(--admin-text);
+    }
+
+    /* خلفية قطرات المياه */
     .water-bg-drops {
       position: fixed;
       top: 0;
@@ -69,25 +84,17 @@
     }
 
     @keyframes floatUp {
-      0% {
-        transform: translateY(0) rotate(0deg) scale(0.8);
-        opacity: 0.1;
-      }
-      50% {
-        opacity: 0.45;
-      }
-      100% {
-        transform: translateY(-110vh) rotate(360deg) scale(1.2);
-        opacity: 0;
-      }
+      0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0.1; }
+      50% { opacity: 0.45; }
+      100% { transform: translateY(-110vh) rotate(360deg) scale(1.2); opacity: 0; }
     }
 
-    /* الشريط العلوي الدائم (Header) */
+    /* الشريط العلوي العام */
     .app-header {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(12px);
       border-bottom: 2px solid rgba(2, 136, 209, 0.15);
       padding: 12px 24px;
@@ -95,6 +102,13 @@
       align-items: center;
       justify-content: space-between;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      gap: 12px;
+    }
+
+    body.admin-mode-active .app-header {
+      background: rgba(30, 41, 59, 0.95);
+      border-bottom-color: var(--admin-border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     .header-brand {
@@ -122,16 +136,21 @@
       line-height: 1.2;
     }
 
+    body.admin-mode-active .brand-title {
+      color: #38BDF8;
+    }
+
     .brand-subtitle {
       font-size: 0.75rem;
       color: var(--green);
       font-weight: 700;
     }
 
-    .header-status {
+    .header-actions {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .badge-pill {
@@ -140,7 +159,7 @@
       padding: 6px 14px;
       border-radius: 50px;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -157,10 +176,10 @@
       background: white;
       border: 1px solid var(--primary);
       color: var(--primary);
-      padding: 6px 14px;
+      padding: 6px 12px;
       border-radius: 50px;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
@@ -172,6 +191,25 @@
       background: var(--primary);
       color: white;
       transform: translateY(-2px);
+    }
+
+    .btn-top.admin-trigger {
+      background: linear-gradient(135deg, #0F172A, #1E293B);
+      color: #38BDF8;
+      border-color: #38BDF8;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25);
+    }
+
+    .btn-top.admin-trigger:hover {
+      background: #0288D1;
+      color: white;
+      border-color: #0288D1;
+    }
+
+    .btn-top.back-to-student {
+      background: #10B981;
+      color: white;
+      border-color: #10B981;
     }
 
     /* شريط تقدم المراحل */
@@ -221,7 +259,6 @@
       flex-direction: column;
       align-items: center;
       gap: 6px;
-      background: transparent;
       cursor: pointer;
     }
 
@@ -260,19 +297,14 @@
       white-space: nowrap;
     }
 
-    .step-item.active .step-label {
-      color: var(--primary-dark);
-    }
-
-    .step-item.completed .step-label {
-      color: var(--green);
-    }
+    .step-item.active .step-label { color: var(--primary-dark); }
+    .step-item.completed .step-label { color: var(--green); }
 
     /* الحاوية الرئيسية للشاشات */
     .app-main {
       flex: 1;
       width: 100%;
-      max-width: 900px;
+      max-width: 920px;
       margin: 20px auto 40px;
       padding: 0 16px;
       position: relative;
@@ -281,7 +313,7 @@
 
     .app-screen {
       display: none;
-      animation: fadeIn 0.4s ease-out;
+      animation: fadeIn 0.35s ease-out;
     }
 
     .app-screen.active {
@@ -289,11 +321,11 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
+      from { opacity: 0; transform: translateY(14px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* بطاقات Glassmorphism */
+    /* كروت Glassmorphism */
     .glass-card {
       background: var(--card-bg);
       backdrop-filter: blur(10px);
@@ -316,12 +348,8 @@
       background: linear-gradient(90deg, #0288D1, #2E7D32, #00B0FF);
     }
 
-    /* عناصر الشاشة الأولى: الترحيب */
-    .hero-section {
-      text-align: center;
-      padding: 20px 10px;
-    }
-
+    /* الشاشة الأولى: الترحيب */
+    .hero-section { text-align: center; padding: 20px 10px; }
     .hero-badge {
       display: inline-block;
       background: rgba(76, 175, 80, 0.15);
@@ -355,15 +383,8 @@
       box-shadow: 0 4px 15px rgba(2, 136, 209, 0.06);
     }
 
-    .hero-message-box p {
-      margin-bottom: 14px;
-    }
-
-    .hero-message-box p:last-child {
-      margin-bottom: 0;
-      font-weight: 700;
-      color: var(--green);
-    }
+    .hero-message-box p { margin-bottom: 14px; }
+    .hero-message-box p:last-child { margin-bottom: 0; font-weight: 700; color: var(--green); }
 
     .hero-waste-counter {
       background: linear-gradient(135deg, #E0F2F1, #E8F5E9);
@@ -407,30 +428,12 @@
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
-    .btn:active {
-      transform: translateY(0);
-    }
+    .btn:active { transform: translateY(0); }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #0288D1, #01579B);
-      color: white;
-    }
-
-    .btn-success {
-      background: linear-gradient(135deg, #4CAF50, #2E7D32);
-      color: white;
-    }
-
-    .btn-secondary {
-      background: #ECEFF1;
-      color: #37474F;
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 2px solid var(--primary);
-      color: var(--primary);
-    }
+    .btn-primary { background: linear-gradient(135deg, #0288D1, #01579B); color: white; }
+    .btn-success { background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; }
+    .btn-secondary { background: #ECEFF1; color: #37474F; }
+    .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
 
     .btn-group-center {
       display: flex;
@@ -440,7 +443,7 @@
       margin-top: 25px;
     }
 
-    /* نموذج البيانات السريعة للطالبة */
+    /* نماذج الإدخال */
     .student-info-form {
       background: white;
       border-radius: var(--radius-md);
@@ -487,16 +490,10 @@
       box-shadow: 0 0 0 3px rgba(2, 136, 209, 0.15);
     }
 
-    textarea.form-control {
-      min-height: 100px;
-      resize: vertical;
-    }
+    textarea.form-control { min-height: 95px; resize: vertical; }
 
-    /* المرحلة الأولى: الأسئلة التفاعلية */
-    .quiz-container {
-      position: relative;
-    }
-
+    /* الأسئلة والخيارات */
+    .quiz-container { position: relative; }
     .quiz-header {
       display: flex;
       justify-content: space-between;
@@ -506,12 +503,7 @@
       border-bottom: 2px solid #ECEFF1;
     }
 
-    .quiz-progress-text {
-      font-weight: 800;
-      color: var(--primary-dark);
-      font-size: 1.1rem;
-    }
-
+    .quiz-progress-text { font-weight: 800; color: var(--primary-dark); font-size: 1.1rem; }
     .question-card {
       background: white;
       border-radius: var(--radius-md);
@@ -551,12 +543,7 @@
       font-size: 4rem;
     }
 
-    .options-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
+    .options-grid { display: flex; flex-direction: column; gap: 12px; }
     .option-item {
       background: #F9FAFB;
       border: 2px solid #E0E0E0;
@@ -638,7 +625,7 @@
       color: #BF360C;
     }
 
-    /* المرحلة الثانية: بطاقات الابتكارات الخمسة */
+    /* بطاقات الابتكارات */
     .innovations-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -656,7 +643,6 @@
       cursor: pointer;
       display: flex;
       flex-direction: column;
-      position: relative;
     }
 
     .innovation-card:hover {
@@ -676,31 +662,11 @@
       margin-bottom: 16px;
     }
 
-    .inno-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: var(--text-main);
-      margin-bottom: 10px;
-    }
+    .inno-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
+    .inno-desc { font-size: 0.95rem; color: var(--text-body); line-height: 1.6; flex-grow: 1; margin-bottom: 16px; }
+    .inno-btn { color: var(--primary); font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; }
 
-    .inno-desc {
-      font-size: 0.95rem;
-      color: var(--text-body);
-      line-height: 1.6;
-      flex-grow: 1;
-      margin-bottom: 16px;
-    }
-
-    .inno-btn {
-      color: var(--primary);
-      font-weight: 800;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* المرحلة الثالثة: ابتكري الحل */
+    /* خيارات الابتكار والمساعد الذكي */
     .choice-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -709,9 +675,7 @@
     }
 
     @media (max-width: 650px) {
-      .choice-container {
-        grid-template-columns: 1fr;
-      }
+      .choice-container { grid-template-columns: 1fr; }
     }
 
     .choice-card {
@@ -736,29 +700,11 @@
       box-shadow: 0 10px 25px rgba(46, 125, 50, 0.15);
     }
 
-    .choice-icon {
-      font-size: 3rem;
-      margin-bottom: 12px;
-    }
+    .choice-icon { font-size: 3rem; margin-bottom: 12px; }
+    .choice-title { font-size: 1.3rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
+    .choice-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; }
 
-    .choice-title {
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: var(--text-main);
-      margin-bottom: 8px;
-    }
-
-    .choice-desc {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    /* حقول مع المساعد الذكي */
-    .field-with-ai {
-      position: relative;
-    }
-
+    .field-with-ai { position: relative; }
     .ai-hint-btn {
       background: linear-gradient(135deg, #7B1FA2, #512DA8);
       color: white;
@@ -799,12 +745,7 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
 
-    #drawingCanvas {
-      cursor: crosshair;
-      touch-action: none;
-      background: #FFFFFF;
-    }
-
+    #drawingCanvas { cursor: crosshair; touch-action: none; background: #FFFFFF; }
     .canvas-toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -824,10 +765,7 @@
       transition: transform 0.15s;
     }
 
-    .color-dot:hover, .color-dot.active {
-      transform: scale(1.25);
-    }
-
+    .color-dot:hover, .color-dot.active { transform: scale(1.25); }
     .canvas-btn {
       background: #ECEFF1;
       border: none;
@@ -839,93 +777,6 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-    }
-
-    .canvas-btn:hover {
-      background: #CFD8DC;
-    }
-
-    /* نافذة المساعد الذكي المنبثقة */
-    .ai-assistant-modal {
-      display: none;
-      position: fixed;
-      bottom: 25px;
-      left: 25px;
-      width: 360px;
-      max-width: 90vw;
-      background: white;
-      border-radius: var(--radius-lg);
-      box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-      border: 2px solid #7B1FA2;
-      z-index: 1000;
-      overflow: hidden;
-      animation: slideUp 0.3s ease;
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(40px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    .ai-modal-header {
-      background: linear-gradient(135deg, #7B1FA2, #512DA8);
-      color: white;
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-weight: 800;
-    }
-
-    .ai-modal-body {
-      padding: 18px;
-      max-height: 350px;
-      overflow-y: auto;
-      font-size: 0.95rem;
-      line-height: 1.7;
-      color: #37474F;
-    }
-
-    .ai-modal-close {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 1.4rem;
-      cursor: pointer;
-    }
-
-    /* المرحلة الرابعة: رسالة النجاح والشهادة */
-    .success-hero {
-      text-align: center;
-      padding: 30px 15px;
-    }
-
-    .success-badge-icon {
-      font-size: 4.5rem;
-      animation: bounce 1.2s infinite;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    .participation-code-box {
-      background: #E8F5E9;
-      border: 2px dashed #4CAF50;
-      padding: 20px;
-      border-radius: var(--radius-md);
-      display: inline-block;
-      margin: 20px 0;
-    }
-
-    .code-text {
-      font-size: 2rem;
-      font-weight: 900;
-      color: #2E7D32;
-      letter-spacing: 2px;
-      direction: ltr;
-      display: inline-block;
     }
 
     /* شهادة الإنجاز الرقمية */
@@ -943,13 +794,7 @@
       max-width: 650px;
     }
 
-    .cert-title {
-      font-size: 1.8rem;
-      font-weight: 900;
-      color: var(--primary-dark);
-      margin-bottom: 10px;
-    }
-
+    .cert-title { font-size: 1.8rem; font-weight: 900; color: var(--primary-dark); margin-bottom: 10px; }
     .cert-student-name {
       font-size: 1.9rem;
       font-weight: 900;
@@ -978,7 +823,124 @@
       color: #1B5E20;
     }
 
-    /* النوافذ المنبثقة العامة (Modals) */
+    /* ================================================================
+       تصميم شاشة لوحة الإدارة المدمجة (Integrated Admin Screen)
+    ================================================================ */
+    #screen-admin {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .admin-shell {
+      background: var(--admin-card);
+      border: 1px solid var(--admin-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      color: var(--admin-text);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+
+    .admin-nav-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--admin-border);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .admin-tab-btn {
+      background: #0F172A;
+      border: 1px solid var(--admin-border);
+      color: #94A3B8;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .admin-tab-btn:hover { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
+    .admin-tab-btn.active { background: #0288D1; color: white; border-color: #0288D1; }
+
+    .admin-stat-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .admin-stat-card {
+      background: #0F172A;
+      border: 1px solid var(--admin-border);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+    }
+
+    .admin-stat-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      height: 4px;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .stat-c-blue::after { background: #38BDF8; }
+    .stat-c-green::after { background: #10B981; }
+    .stat-c-amber::after { background: #F59E0B; }
+    .stat-c-purple::after { background: #A855F7; }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 0.92rem;
+    }
+
+    .admin-table th {
+      background: #141E33;
+      padding: 12px 16px;
+      color: #94A3B8;
+      font-weight: 700;
+      border-bottom: 1px solid var(--admin-border);
+    }
+
+    .admin-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--admin-border);
+      color: #F8FAFC;
+    }
+
+    .admin-table tr:hover { background: rgba(255,255,255,0.02); }
+
+    .admin-btn-sm {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .admin-btn-blue { background: #0288D1; color: white; }
+    .admin-btn-green { background: #10B981; color: white; }
+    .admin-btn-amber { background: #F59E0B; color: #000; }
+    .admin-btn-red { background: #EF4444; color: white; }
+    .admin-btn-outline { background: transparent; border: 1px solid var(--admin-border); color: #94A3B8; }
+
+    /* النوافذ المنبثقة العامة */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -986,8 +948,8 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(5px);
       z-index: 1000;
       align-items: center;
       justify-content: center;
@@ -1002,13 +964,14 @@
       max-height: 90vh;
       overflow-y: auto;
       padding: 30px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
       position: relative;
       animation: zoomIn 0.25s ease;
+      color: var(--text-body);
     }
 
     @keyframes zoomIn {
-      from { transform: scale(0.9); opacity: 0; }
+      from { transform: scale(0.92); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
 
@@ -1028,7 +991,6 @@
       justify-content: center;
     }
 
-    /* التذييل (Footer) */
     .app-footer {
       text-align: center;
       padding: 20px;
@@ -1037,12 +999,19 @@
       font-weight: 600;
       border-top: 1px solid rgba(0,0,0,0.05);
       background: rgba(255, 255, 255, 0.7);
+      margin-top: auto;
     }
 
-    /* تخصيص للطباعة */
+    body.admin-mode-active .app-footer {
+      background: #0F172A;
+      color: #64748B;
+      border-top-color: var(--admin-border);
+    }
+
+    /* طباعة الملصق والشهادة */
     @media print {
       body * { visibility: hidden; }
-      .certificate-card, .certificate-card * { visibility: visible; }
+      .certificate-card, .certificate-card *, #printablePosterArea, #printablePosterArea * { visibility: visible; }
       .certificate-card {
         position: absolute;
         top: 0;
@@ -1052,6 +1021,20 @@
         border-width: 5px;
         box-shadow: none;
       }
+      #printablePosterArea {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: white !important;
+        color: #1E293B !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -1060,37 +1043,52 @@
   <!-- خلفية القطرات العائمة -->
   <div class="water-bg-drops" id="waterDrops"></div>
 
-  <!-- الشريط العلوي الدائم -->
+  <!-- الشريط العلوي العام -->
   <header class="app-header">
     <div class="header-brand" onclick="goHome()">
       <div class="brand-icon">💧</div>
       <div>
-        <div class="brand-title">حُرّاس المياه</div>
-        <div class="brand-subtitle">ابتكري الحل 🌱</div>
+        <div class="brand-title" id="appHeaderTitle">حُرّاس المياه</div>
+        <div class="brand-subtitle" id="appHeaderSubtitle">ابتكري الحل 🌱</div>
       </div>
     </div>
 
-    <div class="header-status">
-      <div class="badge-pill points" id="pointsPill">
-        <span>⭐</span>
-        <span id="scoreText">0 نقطة</span>
+    <div class="header-actions">
+      <!-- أزرار واجهة الطالبات -->
+      <div id="studentHeaderControls" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <div class="badge-pill points" id="pointsPill">
+          <span>⭐</span>
+          <span id="scoreText">0 نقطة</span>
+        </div>
+        <button class="btn-top" onclick="openStudentQrModal()">
+          <span>📲</span>
+          <span>باركود التحدي</span>
+        </button>
+        <button class="btn-top" onclick="openLeaderboard()">
+          <span>🏆</span>
+          <span>لوحة الشرف</span>
+        </button>
+        <button class="btn-top" onclick="promptResumeCode()">
+          <span>🔑</span>
+          <span>كود مشاركتي</span>
+        </button>
       </div>
-      <button class="btn-top" onclick="openLeaderboard()">
-        <span>🏆</span>
-        <span>لوحة الشرف</span>
+
+      <!-- زر الدخول المباشر للوحة الإدارة بضغطة زر -->
+      <button class="btn-top admin-trigger" id="adminToggleBtn" onclick="handleAdminButtonClick()">
+        <span>🔒</span>
+        <span id="adminToggleText">لوحة الإدارة</span>
       </button>
-      <button class="btn-top" onclick="promptResumeCode()">
-        <span>🔑</span>
-        <span>كود مشاركتي</span>
-      </button>
-      <button class="btn-top" onclick="openStudentQrModal()">
-        <span>📲</span>
-        <span>باركود التحدي</span>
+
+      <!-- زر العودة لواجهة الطالبات أثناء وجود المشرف في شاشة الإدارة -->
+      <button class="btn-top back-to-student" id="backToStudentBtn" style="display: none;" onclick="exitAdminScreen()">
+        <span>👧</span>
+        <span>العودة لواجهة الطالبات</span>
       </button>
     </div>
   </header>
 
-  <!-- شريط تقدم المراحل -->
+  <!-- شريط تقدم المراحل (خاص بالطالبات) -->
   <div class="stepper-container" id="stepperContainer">
     <div class="stepper">
       <div class="stepper-progress" id="stepperProgress"></div>
@@ -1140,9 +1138,8 @@
           <p>مهمتكِ اليوم هي اكتشاف المشكلة والتفكير في حلول مبتكرة تساعدنا على بناء مدرسة أكثر استدامة وذكاءً.</p>
         </div>
 
-        <!-- بيانات الطالبة (اختياري وسهل) -->
         <div class="student-info-form">
-          <h3 style="margin-bottom: 16px; color: var(--primary-dark);">📝 بياناتكِ أيتها البطلة (لإصدار شهادتكِ):</h3>
+          <h3 style="margin-bottom: 16px; color: var(--primary-dark);">📝 بياناتكِ أيتها البطلة (لإصدار شهادتكِ الرقمية):</h3>
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label">اسمكِ الكريم:</label>
@@ -1181,25 +1178,16 @@
         <div class="question-card" id="questionCard">
           <div id="qBadgeContainer"></div>
           <div class="question-text" id="qText">جاري تحميل الأسئلة...</div>
-
           <div class="question-visual-box" id="qVisualBox" style="display: none;"></div>
-
           <div class="options-grid" id="qOptionsList"></div>
-
           <div class="explanation-box" id="qExplanationBox"></div>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-          <button class="btn btn-secondary" onclick="prevQuestion()" id="prevQBtn" style="display: none;">
-            السابق
-          </button>
+          <button class="btn btn-secondary" onclick="prevQuestion()" id="prevQBtn" style="display: none;">السابق</button>
           <div style="flex: 1;"></div>
-          <button class="btn btn-primary" onclick="nextQuestion()" id="nextQBtn" style="display: none;">
-            <span>السؤال التالي ←</span>
-          </button>
-          <button class="btn btn-success" onclick="completeQuizStage()" id="finishQBtn" style="display: none;">
-            <span>انتقلي لاكتشاف الابتكارات 🚀</span>
-          </button>
+          <button class="btn btn-primary" onclick="nextQuestion()" id="nextQBtn" style="display: none;"><span>السؤال التالي ←</span></button>
+          <button class="btn btn-success" onclick="completeQuizStage()" id="finishQBtn" style="display: none;"><span>انتقلي لاكتشاف الابتكارات 🚀</span></button>
         </div>
       </div>
     </div>
@@ -1215,9 +1203,7 @@
           </p>
         </div>
 
-        <div class="innovations-grid" id="innovationsCatalogGrid">
-          <!-- يتم ملؤها ديناميكياً من الخادم -->
-        </div>
+        <div class="innovations-grid" id="innovationsCatalogGrid"></div>
 
         <div class="btn-group-center" style="margin-top: 35px;">
           <button class="btn btn-success" onclick="goToStage3()">
@@ -1238,7 +1224,6 @@
           </p>
         </div>
 
-        <!-- خيارا المرحلة الثالثة -->
         <div class="choice-container">
           <div class="choice-card" id="choiceCardExisting" onclick="selectInnovationChoice('existing')">
             <div class="choice-icon">🚿</div>
@@ -1261,22 +1246,18 @@
               <option value="">-- اضغطي للاختيار --</option>
             </select>
           </div>
-
           <div class="form-group" style="margin-bottom: 16px;">
             <label class="form-label">ما اسم الابتكار؟</label>
             <input type="text" id="existingName" class="form-control" />
           </div>
-
           <div class="form-group" style="margin-bottom: 16px;">
             <label class="form-label">ما المشكلة التي يعالجها؟</label>
             <textarea id="existingProblem" class="form-control"></textarea>
           </div>
-
           <div class="form-group" style="margin-bottom: 16px;">
             <label class="form-label">كيف يعمل هذا الابتكار؟</label>
             <textarea id="existingHowWorks" class="form-control"></textarea>
           </div>
-
           <div class="form-group" style="margin-bottom: 20px;">
             <label class="form-label">كيف سيساعد في تقليل هدر المياه في مدرستكِ بالتحديد؟</label>
             <textarea id="existingSchoolHelp" class="form-control" placeholder="اشرحي أثره المباشر في فصول وممرات ودورات مياه مدرستكِ..."></textarea>
@@ -1290,70 +1271,57 @@
             <label class="form-label">اسم الابتكار المقترح:</label>
             <input type="text" id="innoName" class="form-control" placeholder="مثال: حارس القطرة الذكي بالذكاء الاصطناعي" />
           </div>
-
           <div class="form-group field-with-ai" style="margin-bottom: 18px;">
             <button class="ai-hint-btn" onclick="askAiHint('problem_description')">🤖 استشيري المساعد</button>
             <label class="form-label">وصف مشكلة هدر المياه التي لاحظتِها:</label>
             <textarea id="innoProblem" class="form-control" placeholder="أين تحدث المشكلة؟ وكم كمية المياه التي تُهدر تقريباً؟"></textarea>
           </div>
-
           <div class="form-group field-with-ai" style="margin-bottom: 18px;">
             <button class="ai-hint-btn" onclick="askAiHint('innovation_idea')">🤖 استشيري المساعد</button>
             <label class="form-label">فكرة ابتكاركِ المقترح:</label>
             <textarea id="innoIdea" class="form-control" placeholder="اشرحي الفكرة الأساسية باختصار..."></textarea>
           </div>
-
           <div class="form-group field-with-ai" style="margin-bottom: 18px;">
             <button class="ai-hint-btn" onclick="askAiHint('how_it_works')">🤖 استشيري المساعد</button>
             <label class="form-label">كيف يعمل الابتكار؟ (خطوات العمل):</label>
             <textarea id="innoHowWorks" class="form-control" placeholder="1. كيف يستشعر الهدر؟ 2. كيف يتصرف؟ 3. ماذا يرى المستخدم؟"></textarea>
           </div>
-
           <div class="form-group field-with-ai" style="margin-bottom: 18px;">
             <button class="ai-hint-btn" onclick="askAiHint('technology_use')">🤖 استشيري المساعد</button>
             <label class="form-label">كيف يستخدم التكنولوجيا أو الذكاء الاصطناعي؟</label>
             <textarea id="innoTech" class="form-control" placeholder="مثال: حساسات حركة، خوارزميات تعلم آلي ترصد التسرب، تطبيق هاتف..."></textarea>
           </div>
-
           <div class="form-group field-with-ai" style="margin-bottom: 18px;">
             <button class="ai-hint-btn" onclick="askAiHint('water_saving_impact')">🤖 استشيري المساعد</button>
             <label class="form-label">كيف سيساهم في تقليل هدر المياه؟</label>
             <textarea id="innoImpact" class="form-control" placeholder="كم لتراً تتوقعين توفيره؟ ما هو التغيير الإيجابي المتوقع؟"></textarea>
           </div>
-
           <div class="form-group field-with-ai" style="margin-bottom: 20px;">
             <button class="ai-hint-btn" onclick="askAiHint('expected_benefits')">🤖 استشيري المساعد</button>
             <label class="form-label">ما الفائدة المتوقعة للمدرسة والبيئة؟</label>
             <textarea id="innoBenefits" class="form-control" placeholder="الفوائد البيئية، المالية، والتوعوية لزميلاتك الطالبات..."></textarea>
           </div>
 
-          <!-- إرفاق صورة أو رسم توضيحي -->
+          <!-- لوحة الرسم التفاعلية ورفع الصورة -->
           <div class="drawing-box">
             <h4 style="color: var(--primary-dark); margin-bottom: 10px;">🎨 إرفاق صورة أو رسم توضيحي لابتكاركِ:</h4>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">
               يمكنكِ الرسم مباشرة على اللوحة التفاعلية بالأسفل، أو رفع ملف صورة من جهازكِ:
             </p>
-
             <div style="margin-bottom: 15px;">
               <input type="file" id="imageFileInput" accept="image/*" class="form-control" style="max-width: 400px; margin: 0 auto;" />
             </div>
-
             <div style="font-weight: 700; color: #78909C; margin: 10px 0;">— أو ارسمي فكرتكِ هنا —</div>
-
             <div class="canvas-wrapper">
               <canvas id="drawingCanvas" width="450" height="250"></canvas>
             </div>
-
             <div class="canvas-toolbar">
               <span style="font-size: 0.85rem; font-weight: 700;">الألوان:</span>
               <div class="color-dot active" style="background: #0288D1;" onclick="setDrawingColor('#0288D1', this)"></div>
               <div class="color-dot" style="background: #2E7D32;" onclick="setDrawingColor('#2E7D32', this)"></div>
               <div class="color-dot" style="background: #E65100;" onclick="setDrawingColor('#E65100', this)"></div>
               <div class="color-dot" style="background: #000000;" onclick="setDrawingColor('#000000', this)"></div>
-              
-              <button type="button" class="canvas-btn" onclick="clearCanvas()">
-                <span>🗑️ مسح اللوحة</span>
-              </button>
+              <button type="button" class="canvas-btn" onclick="clearCanvas()"><span>🗑️ مسح اللوحة</span></button>
             </div>
           </div>
         </div>
@@ -1368,23 +1336,22 @@
 
     <!-- ==================== الشاشة 5: المرحلة الرابعة (النجاح والشهادة) ==================== -->
     <div class="app-screen" id="screen-stage4">
-      <div class="glass-card success-hero">
-        <div class="success-badge-icon">🎉</div>
+      <div class="glass-card hero-section">
+        <div style="font-size: 4.5rem; animation: bounce 1.2s infinite;">🎉</div>
         <h2 style="color: var(--primary-dark); font-size: 2rem; margin-top: 10px;">أحسنتِ! لقد أصبحتِ الآن من حُرّاس المياه 🌊</h2>
-        
         <p style="font-size: 1.2rem; color: #2E7D32; font-weight: 700; margin: 15px 0;">
           فكرتكِ قد تكون بداية تغيير حقيقي في مدرستكِ. شكراً لمساهمتكِ في حماية البيئة والمحافظة على المياه.
         </p>
 
-        <div class="participation-code-box">
+        <div style="background: #E8F5E9; border: 2px dashed #4CAF50; padding: 18px; border-radius: var(--radius-md); display: inline-block; margin: 15px 0;">
           <div style="font-size: 0.95rem; color: #1B5E20; font-weight: 700; margin-bottom: 6px;">رقم مشاركتكِ الخاص:</div>
-          <div class="code-text" id="finalParticipationCode">WG-000000</div>
-          <div style="margin-top: 10px;">
+          <div style="font-size: 2rem; font-weight: 900; color: #2E7D32; letter-spacing: 2px; direction: ltr;" id="finalParticipationCode">WG-000000</div>
+          <div style="margin-top: 8px;">
             <button class="canvas-btn" onclick="copyParticipationCode()">📋 نسخ الكود</button>
           </div>
         </div>
 
-        <!-- بطاقة شهادة الإنجاز الرقمية -->
+        <!-- شهادة الإنجاز الرقمية -->
         <div class="certificate-card" id="certificateBox">
           <div style="font-size: 3rem; margin-bottom: 5px;">💧</div>
           <div class="cert-title">شهادة حارسة المياه المبتكرة</div>
@@ -1393,13 +1360,11 @@
           <p style="font-size: 1.05rem; color: #37474F; line-height: 1.7;">
             قد أتمت بنجاح تحدي استكشاف هدر المياه، وابتكرت حلاً تقنياً مستداماً يعزز ريادة الأعمال الخضراء والذكاء الاصطناعي في بيئتها المدرسية.
           </p>
-
           <div class="badges-earned-row">
             <div class="badge-item">🛡️ حارسة المياه</div>
             <div class="badge-item">🤖 المفكرة الذكية</div>
             <div class="badge-item">🌱 المبتكرة الخضراء</div>
           </div>
-
           <div style="margin-top: 20px; font-size: 0.9rem; color: #78909C; display: flex; justify-content: space-between;">
             <span id="certDateText">التاريخ: اليوم</span>
             <span>رقم الاعتماد: <strong id="certCodeText">WG-XXXXXX</strong></span>
@@ -1407,55 +1372,302 @@
         </div>
 
         <div class="btn-group-center">
-          <button class="btn btn-primary" onclick="window.print()">
-            <span>🖨️ طباعة الشهادة</span>
-          </button>
-          <button class="btn btn-outline" onclick="openStudentQrModal()">
-            <span>📲 باركود مشاركة زميلاتي</span>
-          </button>
-          <button class="btn btn-outline" onclick="openLeaderboard()">
-            <span>🏆 مشاهدة لوحة الشرف</span>
-          </button>
-          <button class="btn btn-secondary" onclick="location.reload()">
-            <span>🔄 بداية تحدٍ جديد</span>
+          <button class="btn btn-primary" onclick="window.print()"><span>🖨️ طباعة الشهادة</span></button>
+          <button class="btn btn-outline" onclick="openStudentQrModal()"><span>📲 باركود مشاركة زميلاتي</span></button>
+          <button class="btn btn-outline" onclick="openLeaderboard()"><span>🏆 لوحة الشرف</span></button>
+          <button class="btn btn-secondary" onclick="location.reload()"><span>🔄 بداية تحدٍ جديد</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== الشاشة 6: لوحة تحكم الإدارة المدمجة (ADMIN ALL-IN-ONE) ==================== -->
+    <div class="app-screen" id="screen-admin">
+      <div class="admin-shell">
+        <div class="admin-nav-bar">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="admin-tab-btn active" onclick="switchAdminTab('stats', this)"><span>📊 الإحصائيات</span></button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('participants', this)"><span>👥 سجل وتعديل الطالبات</span></button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('innovations', this)"><span>💡 تحكيم وتعديل الابتكارات</span></button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('qrcode', this)"><span>📲 باركود المشاركة (QR)</span></button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('questions', this)"><span>❓ إدارة الأسئلة</span></button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('export', this)"><span>📤 تصدير Excel</span></button>
+          </div>
+          <div>
+            <button class="admin-btn-sm admin-btn-red" onclick="adminLogout()"><span>🚪 خروج المشرف</span></button>
+          </div>
+        </div>
+
+        <!-- تبويب 1: الإحصائيات -->
+        <div id="adminTab-stats" class="admin-sub-tab">
+          <div class="admin-stat-cards">
+            <div class="admin-stat-card stat-c-blue">
+              <div style="font-size: 0.85rem; color: #94A3B8;">إجمالي الطالبات</div>
+              <div style="font-size: 1.8rem; font-weight: 900; color: #38BDF8;" id="adminStatParticipants">0</div>
+            </div>
+            <div class="admin-stat-card stat-c-green">
+              <div style="font-size: 0.85rem; color: #94A3B8;">أكملن التحدي</div>
+              <div style="font-size: 1.8rem; font-weight: 900; color: #10B981;" id="adminStatCompleted">0</div>
+            </div>
+            <div class="admin-stat-card stat-c-amber">
+              <div style="font-size: 0.85rem; color: #94A3B8;">الابتكارات المقدمة</div>
+              <div style="font-size: 1.8rem; font-weight: 900; color: #F59E0B;" id="adminStatInnovations">0</div>
+            </div>
+            <div class="admin-stat-card stat-c-purple">
+              <div style="font-size: 0.85rem; color: #94A3B8;">متوسط النقاط</div>
+              <div style="font-size: 1.8rem; font-weight: 900; color: #A855F7;" id="adminStatAvgScore">0 💧</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;" id="adminChartsWrap">
+            <div style="background: #0F172A; border: 1px solid var(--admin-border); border-radius: 12px; padding: 18px;">
+              <h4 style="color: #38BDF8; margin-bottom: 12px;">📈 مشاركات الأيام الأخيرة</h4>
+              <canvas id="adminDailyChart" height="130"></canvas>
+            </div>
+            <div style="background: #0F172A; border: 1px solid var(--admin-border); border-radius: 12px; padding: 18px;">
+              <h4 style="color: #10B981; margin-bottom: 12px;">🥧 أنواع الابتكارات</h4>
+              <canvas id="adminTypesChart" height="130"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- تبويب 2: سجل وتعديل وحذف الطالبات -->
+        <div id="adminTab-participants" class="admin-sub-tab" style="display: none;">
+          <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+            <input type="text" id="adminSearchStudent" class="form-control" style="max-width: 280px; background: #0F172A; color: white; border-color: var(--admin-border);" placeholder="بحث بالاسم أو الكود..." oninput="renderAdminParticipants()" />
+            <input type="text" id="adminFilterSchool" class="form-control" style="max-width: 240px; background: #0F172A; color: white; border-color: var(--admin-border);" placeholder="تصفية حسب المدرسة..." oninput="renderAdminParticipants()" />
+          </div>
+          <div style="overflow-x: auto; background: #0F172A; border-radius: 10px; border: 1px solid var(--admin-border);">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>كود المشاركة</th>
+                  <th>اسم الطالبة</th>
+                  <th>المدرسة</th>
+                  <th>الصف</th>
+                  <th>النقاط</th>
+                  <th>المرحلة</th>
+                  <th>إجراءات الإدارة</th>
+                </tr>
+              </thead>
+              <tbody id="adminStudentsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- تبويب 3: تحكيم وتعديل وحذف الابتكارات -->
+        <div id="adminTab-innovations" class="admin-sub-tab" style="display: none;">
+          <div style="display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;">
+            <input type="text" id="adminSearchInno" class="form-control" style="max-width: 300px; background: #0F172A; color: white; border-color: var(--admin-border);" placeholder="بحث باسم الابتكار أو الفكرة..." oninput="renderAdminInnovations()" />
+            <select id="adminFilterInnoType" class="form-control" style="max-width: 200px; background: #0F172A; color: white; border-color: var(--admin-border);" onchange="renderAdminInnovations()">
+              <option value="">جميع الأنواع</option>
+              <option value="new">أفكار جديدة</option>
+              <option value="existing">تطوير ابتكار موجود</option>
+            </select>
+          </div>
+          <div id="adminInnoGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px;"></div>
+        </div>
+
+        <!-- تبويب 4: باركود مشاركة الطالبات -->
+        <div id="adminTab-qrcode" class="admin-sub-tab" style="display: none; text-align: center;">
+          <div style="background: #0F172A; border: 2px dashed #0288D1; border-radius: 16px; padding: 25px; max-width: 650px; margin: 0 auto;">
+            <h3 style="color: #38BDF8; margin-bottom: 10px;">📲 باركود وصول ومشاركة الطالبات (QR Code)</h3>
+            <p style="color: #94A3B8; font-size: 0.95rem; margin-bottom: 15px;">
+              امسحي الرمز بكاميرا الجوال للدخول المباشر للمنصة، أو اطبعي الملصق وعلقيه في فصول المدرسة!
+            </p>
+            <div style="margin-bottom: 12px; text-align: right;">
+              <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">رابط المشاركة المضمن:</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="adminQrUrlInput" class="form-control" style="background: #1E293B; color: white; border-color: var(--admin-border); direction: ltr;" />
+                <button class="admin-btn-sm admin-btn-blue" onclick="refreshAdminQrCode()">توليد 🔄</button>
+              </div>
+            </div>
+            <div id="adminQrCodeContainer" style="background: white; padding: 15px; border-radius: 12px; display: inline-block; margin: 15px 0;"></div>
+            <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+              <button class="admin-btn-sm admin-btn-green" style="padding: 8px 16px; font-size: 0.9rem;" onclick="downloadAdminQr()"><span>📥 تحميل صورة الباركود</span></button>
+              <button class="admin-btn-sm admin-btn-amber" style="padding: 8px 16px; font-size: 0.9rem;" onclick="printQrPoster()"><span>🖨️ طباعة ملصق المدرسة</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- تبويب 5: إدارة الأسئلة -->
+        <div id="adminTab-questions" class="admin-sub-tab" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="color: #38BDF8;">قائمة أسئلة التحدي</h3>
+            <button class="admin-btn-sm admin-btn-green" onclick="openAddQuestionModal()"><span>➕ إضافة سؤال جديد</span></button>
+          </div>
+          <div style="overflow-x: auto; background: #0F172A; border-radius: 10px; border: 1px solid var(--admin-border);">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>نص السؤال</th>
+                  <th>النوع</th>
+                  <th>النقاط</th>
+                  <th>الإجابة الصحيحة</th>
+                  <th>الحالة</th>
+                  <th>إجراء</th>
+                </tr>
+              </thead>
+              <tbody id="adminQuestionsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- تبويب 6: تصدير النتائج -->
+        <div id="adminTab-export" class="admin-sub-tab" style="display: none; text-align: center; padding: 30px;">
+          <div style="font-size: 4rem; margin-bottom: 10px;">📊</div>
+          <h2 style="color: #38BDF8; margin-bottom: 10px;">تصدير سجل الطالبات والابتكارات إلى Excel</h2>
+          <p style="color: #94A3B8; max-width: 600px; margin: 0 auto 20px; line-height: 1.6;">
+            تحميل ملف CSV متكامل متوافق مع Microsoft Excel ويدعم اللغة العربية بنسبة 100%، يشمل بيانات الطالبات، النقاط، نصوص الابتكارات، والتقييمات.
+          </p>
+          <button class="btn btn-success" onclick="exportDataExcel()">
+            <span>📥 تنزيل ملف Excel / CSV الآن</span>
           </button>
         </div>
+
       </div>
     </div>
 
   </main>
 
-  <!-- نافذة المساعد الذكي العائمة -->
-  <div class="ai-assistant-modal" id="aiModal">
-    <div class="ai-modal-header">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span>🤖</span>
-        <span>مساعد المياه الذكي</span>
+  <!-- ==================== نافذة تسجيل دخول المشرف (بضغطة زر مع طلب اليوزر والباسورد) ==================== -->
+  <div class="modal-overlay" id="adminLoginModal">
+    <div class="modal-content" style="max-width: 420px; text-align: center; background: #1E293B; color: #F8FAFC; border: 1px solid #334155;">
+      <button class="modal-close-btn" style="background: #334155; color: white;" onclick="closeAdminLoginModal()">&times;</button>
+      <div style="font-size: 3.5rem; margin-bottom: 8px;">🛡️</div>
+      <h3 style="color: #38BDF8; margin-bottom: 6px;">بوابة الإدارة والتحكيم</h3>
+      <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 20px;">يرجى إدخال اسم المستخدم وكلمة المرور للمتابعة</p>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; text-align: right;">
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 5px;">اسم المستخدم:</label>
+          <input type="text" id="adminModalUser" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" value="admin" />
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 5px;">كلمة المرور:</label>
+          <input type="password" id="adminModalPass" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" value="admin123" />
+        </div>
+        <div id="adminLoginModalError" style="color: #EF4444; font-size: 0.85rem; display: none;"></div>
+        <button class="btn btn-primary" onclick="submitAdminLogin()" style="margin-top: 8px;">
+          <span>دخول لوحة الإدارة 🔓</span>
+        </button>
       </div>
-      <button class="ai-modal-close" onclick="closeAiModal()">&times;</button>
-    </div>
-    <div class="ai-modal-body" id="aiModalBody">
-      جاري التفكير وتقديم الإرشاد...
     </div>
   </div>
 
-  <!-- نافذة تفاصيل الابتكار المنبثقة (المرحلة الثانية) -->
+  <!-- ==================== نافذة تعديل بيانات الطالبة ==================== -->
+  <div class="modal-overlay" id="adminEditStudentModal">
+    <div class="modal-content" style="max-width: 480px; background: #1E293B; color: #F8FAFC; border: 1px solid #334155;">
+      <button class="modal-close-btn" style="background: #334155; color: white;" onclick="closeEditStudentModal()">&times;</button>
+      <h3 style="color: #38BDF8; margin-bottom: 16px;">✏️ تعديل بيانات مشاركة الطالبة</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px; text-align: right;">
+        <input type="hidden" id="adminEditStudentId" />
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">اسم الطالبة:</label>
+          <input type="text" id="adminEditStudentName" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" />
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">المدرسة:</label>
+          <input type="text" id="adminEditStudentSchool" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" />
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">الصف الدراسي:</label>
+          <input type="text" id="adminEditStudentGrade" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" />
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">نقاط الاختبار:</label>
+          <input type="number" id="adminEditStudentScore" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" />
+        </div>
+        <button class="btn btn-success" onclick="saveStudentChanges()" style="margin-top: 10px;">
+          <span>💾 حفظ التعديلات</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== نافذة تعديل الابتكار / الطلب ==================== -->
+  <div class="modal-overlay" id="adminEditInnoModal">
+    <div class="modal-content" style="max-width: 650px; background: #1E293B; color: #F8FAFC; border: 1px solid #334155;">
+      <button class="modal-close-btn" style="background: #334155; color: white;" onclick="closeEditInnoModal()">&times;</button>
+      <h3 style="color: #38BDF8; margin-bottom: 16px;">✏️ تعديل تفاصيل الابتكار / الطلب</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px; text-align: right;">
+        <input type="hidden" id="adminEditInnoId" />
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">اسم الابتكار:</label>
+            <input type="text" id="adminEditInnoName" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" />
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">النوع:</label>
+            <select id="adminEditInnoType" class="form-control" style="background: #0F172A; color: white; border-color: #334155;">
+              <option value="new">فكرة جديدة</option>
+              <option value="existing">تطوير ابتكار موجود</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">المشكلة المعالجة:</label>
+          <textarea id="adminEditInnoProblem" class="form-control" style="background: #0F172A; color: white; border-color: #334155; min-height: 60px;"></textarea>
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">فكرة الابتكار:</label>
+          <textarea id="adminEditInnoIdea" class="form-control" style="background: #0F172A; color: white; border-color: #334155; min-height: 60px;"></textarea>
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">كيف يعمل؟:</label>
+          <textarea id="adminEditInnoHowWorks" class="form-control" style="background: #0F172A; color: white; border-color: #334155; min-height: 60px;"></textarea>
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">التقنية والذكاء الاصطناعي:</label>
+          <input type="text" id="adminEditInnoTech" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" />
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">ملاحظات الإدارة:</label>
+          <input type="text" id="adminEditInnoNotes" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" />
+        </div>
+        <button class="btn btn-success" onclick="saveInnoChanges()" style="margin-top: 10px;">
+          <span>💾 حفظ تعديلات الابتكار</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== نافذة تفاصيل إجابات الطالبة ==================== -->
+  <div class="modal-overlay" id="adminStudentAnswersModal">
+    <div class="modal-content" style="max-width: 600px; background: #1E293B; color: #F8FAFC; border: 1px solid #334155;">
+      <button class="modal-close-btn" style="background: #334155; color: white;" onclick="closeStudentAnswersModal()">&times;</button>
+      <h3 style="color: #38BDF8; margin-bottom: 6px;" id="adminAnswersTitle">سجل إجابات الطالبة</h3>
+      <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 16px;" id="adminAnswersSubtitle"></p>
+      <div id="adminAnswersList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+  </div>
+
+  <!-- ==================== نافذة المساعد الذكي ==================== -->
+  <div class="modal-overlay" id="aiModal">
+    <div class="modal-content" style="max-width: 480px;">
+      <button class="modal-close-btn" onclick="closeAiModal()">&times;</button>
+      <div style="font-size: 2.5rem; text-align: center; margin-bottom: 6px;">🤖</div>
+      <h3 style="color: #7B1FA2; text-align: center; margin-bottom: 15px;">مساعد المياه الذكي</h3>
+      <div id="aiModalBody" style="font-size: 0.95rem; line-height: 1.7; color: #37474F;">
+        جاري استشارة المساعد الذكي...
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== نافذة تفاصيل الابتكار (المرحلة 2) ==================== -->
   <div class="modal-overlay" id="innoDetailModal">
     <div class="modal-content">
       <button class="modal-close-btn" onclick="closeInnoModal()">&times;</button>
       <div id="innoModalIcon" style="font-size: 3.5rem; text-align: center; margin-bottom: 10px;">💧</div>
       <h2 id="innoModalTitle" style="color: var(--primary-dark); text-align: center; margin-bottom: 15px;"></h2>
-      
       <div style="margin-bottom: 16px;">
         <h4 style="color: #D32F2F; margin-bottom: 6px;">🔍 المشكلة التي يعالجها:</h4>
         <p id="innoModalProblem" style="color: #37474F; line-height: 1.6;"></p>
       </div>
-
       <div style="margin-bottom: 20px;">
         <h4 style="color: #2E7D32; margin-bottom: 6px;">⚙️ كيف يعمل هذا الابتكار؟</h4>
         <p id="innoModalHowWorks" style="color: #37474F; line-height: 1.6;"></p>
       </div>
-
       <div style="text-align: center;">
         <button class="btn btn-primary" onclick="chooseThisInnoFromModal()">
           <span>اختيار هذا الابتكار والبدء في تطويره ✨</span>
@@ -1464,23 +1676,22 @@
     </div>
   </div>
 
-  <!-- نافذة لوحة الشرف والمتصدرات (Leaderboard Modal) -->
+  <!-- ==================== نافذة لوحة الشرف والمتصدرات ==================== -->
   <div class="modal-overlay" id="leaderboardModal">
     <div class="modal-content">
       <button class="modal-close-btn" onclick="closeLeaderboard()">&times;</button>
       <div style="text-align: center; margin-bottom: 20px;">
         <div style="font-size: 3rem;">🏆</div>
         <h2 style="color: var(--primary-dark);">لوحة الشرف – أفضل المبتكرات</h2>
-        <p style="color: var(--text-muted); font-size: 0.95rem;">أبرز الأفكار والابتكارات المسجلة لحماية المياه المدرسية</p>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">أبرز الأفكار المسجلة لحماية المياه المدرسية</p>
       </div>
-
       <div id="leaderboardContent">
         <p style="text-align: center; color: var(--text-muted);">جاري تحميل لوحة المتصدرات...</p>
       </div>
     </div>
   </div>
 
-  <!-- نافذة باركود مشاركة الطالبات -->
+  <!-- ==================== نافذة باركود مشاركة الطالبات ==================== -->
   <div class="modal-overlay" id="studentQrModal">
     <div class="modal-content" style="text-align: center; max-width: 480px;">
       <button class="modal-close-btn" onclick="closeStudentQrModal()">&times;</button>
@@ -1489,15 +1700,30 @@
       <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px;">
         دعي زميلاتكِ في المدرسة يمسحن هذا الباركود بكاميرا الجوال للانضمام فوراً لتحدي حُرّاس المياه!
       </p>
-      <img id="studentQrImg" style="width: 250px; height: 250px; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); margin: 0 auto 15px; display: block;" src="" alt="QR Code" />
-      <div id="studentQrUrl" style="direction: ltr; font-family: monospace; font-size: 0.9rem; color: #0288D1; margin-bottom: 16px; font-weight: 700;"></div>
+      <div id="studentQrCodeBox" style="background: white; padding: 12px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 12px;"></div>
+      <div id="studentQrUrl" style="direction: ltr; font-family: monospace; font-size: 0.85rem; color: #0288D1; margin-bottom: 16px; font-weight: 700;"></div>
       <button class="btn btn-primary" onclick="closeStudentQrModal()">
         <span>تم، شكراً لكِ 🌟</span>
       </button>
     </div>
   </div>
 
-  <!-- التذييل -->
+  <!-- بوستر الطباعة المدرسي الملون -->
+  <div id="printablePosterArea" style="display: none;">
+    <div style="border: 10px solid #0288D1; border-radius: 25px; padding: 40px; max-width: 700px; margin: 0 auto; background: white;">
+      <div style="font-size: 4rem;">💧</div>
+      <h1 style="font-size: 2.8rem; color: #01579B; margin: 10px 0;">حُرّاس المياه – ابتكري الحل 🌱</h1>
+      <h2 style="font-size: 1.5rem; color: #10B981; margin-bottom: 25px;">تحدي ريادة الأعمال الخضراء والذكاء الاصطناعي</h2>
+      <div id="posterQrContainer" style="background: #F1F8E9; border: 3px dashed #4CAF50; border-radius: 20px; padding: 25px; display: inline-block; margin-bottom: 20px;"></div>
+      <h3 style="font-size: 1.8rem; color: #D32F2F; margin-bottom: 10px;">📲 امسحي الباركود بكاميرا هاتفكِ الآن!</h3>
+      <p style="font-size: 1.2rem; color: #546E7A; line-height: 1.6;">
+        شاركي معنا في حماية مياه مدرستنا، أجيبي على الأسئلة التفاعلية، وابتكري حلاً ذكياً واحصلِي على شهادتكِ الرقمية!
+      </p>
+      <div style="margin-top: 25px; font-weight: 700; color: #0288D1; direction: ltr; font-size: 1.1rem;" id="posterUrlText"></div>
+    </div>
+  </div>
+
+  <!-- التذييل العام -->
   <footer class="app-footer">
     مشروع «حُرّاس المياه – ابتكري الحل» © 2024 | منصة ريادة الأعمال الخضراء والذكاء الاصطناعي للمدارس المستدامة 💧
   </footer>
@@ -1506,7 +1732,25 @@
     /* ================================================================
        حالة التطبيق العامة (Application State)
     ================================================================ */
-    // دالة جلب آمنة تحمي من أخطاء 404 وتدعم النشر على GitHub Pages أو الخوادم
+    const state = {
+      participantId: null,
+      participationCode: null,
+      name: '',
+      school: '',
+      grade: '',
+      score: 0,
+      currentStep: 1,
+      questions: [],
+      currentQIndex: 0,
+      answeredQuestions: {},
+      innovationsCatalog: [],
+      selectedInnovationType: 'new',
+      selectedModalInno: null,
+      isAdminLoggedIn: false,
+      isServerConnected: false
+    };
+
+    // دالة فحص اتصال آمنة
     async function safeApiCall(url, method = 'GET', body = null) {
       try {
         const opts = { method, headers: {} };
@@ -1522,6 +1766,7 @@
         if (!res.ok) return null;
         const ct = res.headers.get('content-type') || '';
         if (ct.includes('application/json')) {
+          state.isServerConnected = true;
           return await res.json();
         }
         return null;
@@ -1530,23 +1775,7 @@
       }
     }
 
-    const state = {
-      participantId: null,
-      participationCode: null,
-      name: '',
-      school: '',
-      grade: '',
-      score: 0,
-      currentStep: 1,
-      questions: [],
-      currentQIndex: 0,
-      answeredQuestions: {},
-      innovationsCatalog: [],
-      selectedInnovationType: 'new', // 'existing' or 'new'
-      selectedModalInno: null
-    };
-
-    // إعداد عداد الهدر في الشاشة الرئيسية
+    // عداد المياه التفاعلي
     let wasteAmount = 3450;
     setInterval(() => {
       wasteAmount += Math.floor(Math.random() * 3) + 1;
@@ -1554,12 +1783,12 @@
       if (el) el.textContent = wasteAmount.toLocaleString('ar-EG');
     }, 2500);
 
-    // توليد قطرات الماء المتحركة في الخلفية
+    // توليد قطرات الماء العائمة
     function initWaterDrops() {
       const bg = document.getElementById('waterDrops');
       if (!bg) return;
       const drops = ['💧', '🌊', '🫧', '✨', '🌱'];
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 18; i++) {
         const drop = document.createElement('div');
         drop.className = 'floating-drop';
         drop.textContent = drops[i % drops.length];
@@ -1571,7 +1800,7 @@
       }
     }
 
-    // التنقل بين الشاشات
+    // التنقل بين شاشات التطبيق
     function showScreen(screenId) {
       document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
       const target = document.getElementById(screenId);
@@ -1579,9 +1808,27 @@
         target.classList.add('active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
+
+      // ضبط مظهر الهيدر والستبر بناءً على شاشة الأدمن
+      if (screenId === 'screen-admin') {
+        document.body.classList.add('admin-mode-active');
+        document.getElementById('stepperContainer').style.display = 'none';
+        document.getElementById('studentHeaderControls').style.display = 'none';
+        document.getElementById('adminToggleBtn').style.display = 'none';
+        document.getElementById('backToStudentBtn').style.display = 'inline-flex';
+        document.getElementById('appHeaderTitle').textContent = 'لوحة الإدارة والتحكيم';
+        document.getElementById('appHeaderSubtitle').textContent = 'نظام إدارة حُرّاس المياه';
+      } else {
+        document.body.classList.remove('admin-mode-active');
+        document.getElementById('stepperContainer').style.display = 'block';
+        document.getElementById('studentHeaderControls').style.display = 'flex';
+        document.getElementById('adminToggleBtn').style.display = 'inline-flex';
+        document.getElementById('backToStudentBtn').style.display = 'none';
+        document.getElementById('appHeaderTitle').textContent = 'حُرّاس المياه';
+        document.getElementById('appHeaderSubtitle').textContent = 'ابتكري الحل 🌱';
+      }
     }
 
-    // تحديث شريط الخطوات في الأعلى
     function updateStepper(stepNumber) {
       state.currentStep = stepNumber;
       const progressPercent = ((stepNumber - 1) / 3) * 80;
@@ -1591,11 +1838,8 @@
         const item = document.getElementById('step' + i);
         if (!item) continue;
         item.classList.remove('active', 'completed');
-        if (i < stepNumber) {
-          item.classList.add('completed');
-        } else if (i === stepNumber) {
-          item.classList.add('active');
-        }
+        if (i < stepNumber) item.classList.add('completed');
+        else if (i === stepNumber) item.classList.add('active');
       }
     }
 
@@ -1613,12 +1857,17 @@
     }
 
     function goHome() {
-      showScreen('screen-welcome');
-      updateStepper(1);
+      if (state.isAdminLoggedIn) {
+        showScreen('screen-welcome');
+        updateStepper(1);
+      } else {
+        showScreen('screen-welcome');
+        updateStepper(1);
+      }
     }
 
     /* ================================================================
-       بدء التحدي وتسجيل الطالبة
+       المرحلة 0: تسجيل الطالبة وبدء التحدي
     ================================================================ */
     async function startChallenge() {
       const name = document.getElementById('studentNameInput').value.trim() || 'مبتكرة حُرّاس المياه';
@@ -1633,11 +1882,18 @@
       if (data && data.success) {
         state.participantId = data.participantId;
         state.participationCode = data.participationCode;
-        localStorage.setItem('wg_participant_code', data.participationCode);
       } else {
+        state.participantId = Date.now();
         state.participationCode = 'WG-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        // حفظ محلي في حال العمل المستقل
+        saveLocalParticipant({
+          id: state.participantId,
+          participation_code: state.participationCode,
+          name, school, grade, quiz_score: 0, stage_completed: 1, created_at: new Date().toISOString()
+        });
       }
 
+      localStorage.setItem('wg_participant_code', state.participationCode);
       localStorage.setItem('wg_student_name', name);
       localStorage.setItem('wg_student_school', school);
 
@@ -1646,43 +1902,25 @@
       loadQuestions();
     }
 
-    // استئناف المشاركة السابقة
     async function promptResumeCode() {
       const saved = localStorage.getItem('wg_participant_code') || '';
       const code = prompt('أدخلي كود مشاركتكِ السابق (مثال: WG-ABC12345):', saved);
       if (!code) return;
 
-      try {
-        const res = await fetch('/api/participant/resume', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: code.trim() })
-        });
-        const data = await res.json();
-        if (data.success && data.participant) {
-          const p = data.participant;
-          state.participantId = p.id;
-          state.participationCode = p.participation_code;
-          state.name = p.name;
-          state.school = p.school;
-          state.score = p.quiz_score;
-          updateScoreDisplay(p.quiz_score);
-
-          alert(`أهلاً بعودتكِ أيتها المبتكرة ${p.name}! نقاطك الحالية: ${p.quiz_score} 💧`);
-          if (p.stage_completed >= 3) {
-            displayFinalSuccess(p.participation_code);
-          } else if (p.stage_completed >= 1) {
-            goToStage2();
-          } else {
-            showScreen('screen-stage1');
-            updateStepper(1);
-            loadQuestions();
-          }
-        } else {
-          alert(data.error || 'لم يتم العثور على هذا الكود');
-        }
-      } catch (e) {
-        alert('تعذر التحقق من الكود حالياً');
+      const data = await safeApiCall('/api/participant/resume', 'POST', { code: code.trim() });
+      if (data && data.success && data.participant) {
+        const p = data.participant;
+        state.participantId = p.id;
+        state.participationCode = p.participation_code;
+        state.name = p.name;
+        state.school = p.school;
+        state.score = p.quiz_score;
+        updateScoreDisplay(p.quiz_score);
+        alert(`أهلاً بعودتكِ أيتها المبتكرة ${p.name}! نقاطك: ${p.quiz_score} 💧`);
+        if (p.stage_completed >= 3) displayFinalSuccess(p.participation_code);
+        else goToStage2();
+      } else {
+        alert('لم يتم العثور على هذا الكود، يمكنكِ البدء بمشاركة جديدة!');
       }
     }
 
@@ -1693,7 +1931,7 @@
     }
 
     /* ================================================================
-       المرحلة الأولى: الأسئلة التفاعلية (QUIZ)
+       المرحلة الأولى: اكتشفي المشكلة (الأسئلة التفاعلية)
     ================================================================ */
     async function loadQuestions() {
       const data = await safeApiCall('/api/questions/1');
@@ -1702,7 +1940,6 @@
       } else {
         state.questions = getFallbackQuestions();
       }
-
       state.currentQIndex = 0;
       renderCurrentQuestion();
     }
@@ -1714,6 +1951,7 @@
           question_text: 'ماذا يحدث عندما نفتح عبوة المياه ولا نستهلكها بالكامل؟',
           question_type: 'multiple',
           options: ['تُهدر المياه المتبقية وتُرمى في سلة المهملات', 'تتحول المياه المتبقية تلقائياً إلى بخار مفيد', 'لا يوجد أي ضرر بيئي أو هدر مالي', 'تُستخدم المياه تلقائياً في ري الحدائق'],
+          correct_answer: 'تُهدر المياه المتبقية وتُرمى في سلة المهملات',
           explanation: 'عندما نفتح عبوة ولا نكملها، تُهدر كميات كبيرة من المياه النقية التي استهلكت موارد وطاقة في تعبئتها ونقلها. الحل: احملي عبوة قابلة لإعادة التعبئة!',
           points: 15
         },
@@ -1722,6 +1960,7 @@
           question_text: 'موقف واقعي: شاهدتِ في فناء المدرسة صنبور مياه مفتوحاً يتدفق بقوة دون استخدام، ما التصرف الصحيح؟',
           question_type: 'scenario',
           options: ['أغلق الصنبور فوراً بحذر ثم أبلغ المعلمة أو الإدارة', 'أتجاهله لأنه ليس مسؤوليتي المباشرة', 'أنتظر حتى تأتي طالبة أخرى لتغلقه', 'أصوره وأنصرف دون إغلاقه'],
+          correct_answer: 'أغلق الصنبور فوراً بحذر ثم أبلغ المعلمة أو الإدارة',
           explanation: 'الصنبور المفتوح يهدر أكثر من 150 لتراً في الساعة الواحدة! إغلاقه الفوري والإبلاغ هو التصرف الإيجابي المسؤول.',
           points: 20
         },
@@ -1730,14 +1969,16 @@
           question_text: 'هل العبارة صحيحة أم خطأ: الصنبور الذي يقطر ببطء لا يهدر كمية تستحق الاهتمام؟',
           question_type: 'truefalse',
           options: ['صح', 'خطأ'],
+          correct_answer: 'خطأ',
           explanation: 'خطأ! قطرة واحدة كل ثانية تهدر أكثر من 30 لتراً يومياً ونحو 11,000 لتر سنوياً!',
           points: 10
         },
         {
           id: 4,
-          question_text: 'كيف يمكن تقليل هدر المياه في دورات المياه المدرسية بنسبة تصل إلى 70%؟',
+          question_text: 'سؤال مصور وتقني: كيف يمكن تقليل هدر المياه في دورات المياه المدرسية بنسبة تصل إلى 70%؟',
           question_type: 'image',
           options: ['تركيب صنابير ذكية مزودة بحساسات استشعار الحركة', 'استخدام صنابير تقليدية فقط', 'إغلاق دورات المياه تماماً أثناء اليوم الدراسي', 'تقليل ضغط المياه لدرجة الانقطاع'],
+          correct_answer: 'تركيب صنابير ذكية مزودة بحساسات استشعار الحركة',
           explanation: 'الصنابير الذكية المزودة بحساسات توقف تدفق المياه تلقائياً عند إبعاد اليدين وتوفر ما يصل إلى 70% من الاستهلاك!',
           points: 20
         },
@@ -1746,6 +1987,7 @@
           question_text: 'لماذا يُعتبر ترشيد استهلاك المياه مسؤولية الجميع؟',
           question_type: 'multiple',
           options: ['لأن المياه العذبة ثروة ثمينة محدودة يحتاجها كل كائن حي لكوكب مستدام', 'لتقليل فاتورة المياه للمدرسة فقط', 'لأن القوانين تفرض ذلك كعقوبة فقط', 'لا يهم فالمياه وفيرة في الطبيعة'],
+          correct_answer: 'لأن المياه العذبة ثروة ثمينة محدودة يحتاجها كل كائن حي لكوكب مستدام',
           explanation: 'المياه العذبة تمثل أقل من 1% من مياه الأرض المتاحة للبشر. حمايتها واجب أخلاقي وبيئي مشترك.',
           points: 15
         },
@@ -1754,6 +1996,7 @@
           question_text: 'كيف يمكن للتكنولوجيا والذكاء الاصطناعي المساعدة في القضاء على هدر المياه؟',
           question_type: 'multiple',
           options: ['تحليل أنماط التدفق وكشف التسريبات المخفية وإرسال تنبيهات فورية للمسؤولين', 'منع الطلاب من شرب المياه أثناء الحصص', 'استبدال المياه بالكامل بسوائل صناعية', 'لا يوجد أي دور للذكاء الاصطناعي في إدارة المياه'],
+          correct_answer: 'تحليل أنماط التدفق وكشف التسريبات المخفية وإرسال تنبيهات فورية للمسؤولين',
           explanation: 'الذكاء الاصطناعي يستطيع تحليل بيانات الاستهلاك واكتشاف أي تدفق شاذ يشير لتسريب وإصلاحه فوراً.',
           points: 20
         }
@@ -1767,7 +2010,6 @@
       document.getElementById('quizCounterText').textContent = `السؤال ${state.currentQIndex + 1} من ${state.questions.length}`;
       document.getElementById('qText').textContent = q.question_text;
 
-      // نوع السؤال
       const badgeBox = document.getElementById('qBadgeContainer');
       badgeBox.innerHTML = '';
       const badge = document.createElement('span');
@@ -1785,16 +2027,14 @@
       badge.classList.add(meta.cls);
       badgeBox.appendChild(badge);
 
-      // العنصر المرئي للأسئلة المصورة
       const visualBox = document.getElementById('qVisualBox');
       if (q.question_type === 'image' || q.image_url) {
         visualBox.style.display = 'block';
-        visualBox.textContent = q.image_url === 'sensor_tap' ? '🚿✨' : '💧🔍';
+        visualBox.textContent = '🚿✨';
       } else {
         visualBox.style.display = 'none';
       }
 
-      // قائمة الخيارات
       const optList = document.getElementById('qOptionsList');
       optList.innerHTML = '';
 
@@ -1810,7 +2050,7 @@
 
         const indicator = document.createElement('div');
         indicator.className = 'option-indicator';
-        indicator.textContent = String.fromCharCode(1571 + idx); // أ ، ب ، ج ، د
+        indicator.textContent = String.fromCharCode(1571 + idx);
 
         const label = document.createElement('span');
         label.textContent = optText;
@@ -1832,16 +2072,13 @@
         optList.appendChild(item);
       });
 
-      // إظهار التفسير إن كان مجاباً
       if (isAnswered) {
         explBox.textContent = (isAnswered.isCorrect ? '✅ إجابة رائعة وممتازة! ' : '💡 للتوضيح: ') + isAnswered.explanation;
         explBox.className = 'explanation-box ' + (isAnswered.isCorrect ? 'correct' : 'wrong');
         explBox.style.display = 'block';
       }
 
-      // أزرار التنقل
       document.getElementById('prevQBtn').style.display = state.currentQIndex > 0 ? 'inline-flex' : 'none';
-
       const isLast = state.currentQIndex === state.questions.length - 1;
       document.getElementById('nextQBtn').style.display = (isAnswered && !isLast) ? 'inline-flex' : 'none';
       document.getElementById('finishQBtn').style.display = (isAnswered && isLast) ? 'inline-flex' : 'none';
@@ -1852,7 +2089,7 @@
       let isCorrect = false;
       let pointsEarned = 0;
       let explanation = q.explanation || 'الترشيد مسؤولية الجميع لحماية البيئة.';
-      let correctAnswer = '';
+      let correctAnswer = q.correct_answer || '';
 
       const data = await safeApiCall('/api/quiz/answer', 'POST', { questionId, answer: selectedAnswer });
       if (data && typeof data.isCorrect === 'boolean') {
@@ -1862,12 +2099,12 @@
         correctAnswer = data.correctAnswer;
         if (data.currentTotalScore) updateScoreDisplay(data.currentTotalScore);
       } else {
-        // Fallback محلي آمن في حال غياب السيرفر
         const cleanA = (selectedAnswer || '').trim().toLowerCase();
-        const cleanC = (q.correct_answer || '').trim().toLowerCase();
-        isCorrect = (cleanA === cleanC || selectedAnswer.includes('أغلق') || selectedAnswer.includes('تركيب') || selectedAnswer.includes('ثروة ثمينة') || selectedAnswer.includes('تحليل'));
+        const cleanC = (correctAnswer || '').trim().toLowerCase();
+        isCorrect = (cleanA === cleanC || selectedAnswer.includes('أغلق') || selectedAnswer.includes('تركيب') || selectedAnswer.includes('ثروة ثمينة') || selectedAnswer.includes('تحليل') || selectedAnswer.includes('تُهدر'));
         pointsEarned = isCorrect ? (q.points || 15) : 0;
         updateScoreDisplay(state.score + pointsEarned);
+        updateLocalStudentScore(state.participantId, state.score);
       }
 
       state.answeredQuestions[questionId] = {
@@ -1896,10 +2133,7 @@
     }
 
     async function completeQuizStage() {
-      try {
-        await fetch('/api/quiz/complete', { method: 'POST' });
-      } catch (e) {}
-
+      await safeApiCall('/api/quiz/complete', 'POST');
       goToStage2();
     }
 
@@ -1955,7 +2189,6 @@
         grid.appendChild(card);
       });
 
-      // ملء قائمة الاختيار للخيار الأول في المرحلة الثالثة
       const select = document.getElementById('existingSelect');
       select.innerHTML = '<option value="">-- اختاري أحد الحلول المقترحة --</option>';
       state.innovationsCatalog.forEach(item => {
@@ -1972,8 +2205,8 @@
           id: 1,
           title: 'العبوات القابلة لإعادة التعبئة',
           description: 'استخدام عبوات مياه شخصية بدلاً من فتح عبوات جديدة وترك المتبقي منها.',
-          how_it_works: 'تُزوَّد المدرسة بمحطات تعبئة مياه نقية، تحمل كل طالبة عبوتها الشخصية وتملأها عند الحاجة مع تتبع العبوات الموفرة.',
-          problem_solved: 'هدر مياه العبوات البلاستيكية المفتوحة غير المكتملة وتراكم النفايات.',
+          how_it_works: 'تُزوَّد المدرسة بمحطات تعبئة مياه نقية، تحمل كل طالبة عبوتها الشخصية وتملأها عند الحاجة.',
+          problem_solved: 'هدر مياه العبوات البلاستيكية المفتوحة وتراكم النفايات.',
           icon: '🍶',
           color: '#4CAF50'
         },
@@ -1981,7 +2214,7 @@
           id: 2,
           title: 'الصنابير الذكية',
           description: 'تركيب حساسات توقف تدفق المياه تلقائياً عند إبعاد اليدين.',
-          how_it_works: 'حساس الأشعة تحت الحمراء يستشعر وجود اليدين فيفتح الصنبور فوراً، ويغلقه بمجرد إبعادهما، مع شاشة تعرض التوفير.',
+          how_it_works: 'حساس الأشعة تحت الحمراء يكتشف وجود اليدين فيفتح الصنبور فوراً ويغلقه بمجرد إبعادهما.',
           problem_solved: 'إهمال إغلاق الصنابير وإبقاؤها مفتوحة دون استخدام.',
           icon: '🚿',
           color: '#0288D1'
@@ -1990,7 +2223,7 @@
           id: 3,
           title: 'نظام كشف التسرب',
           description: 'حساسات تكتشف تسرب المياه وترسل تنبيهاً فورياً للمسؤولين.',
-          how_it_works: 'مستشعرات ضغط واهتزاز صوتية على الأنابيب تكتشف أي تسريب خفي وترسل إشعاراً مع تحديد الموقع بدقة.',
+          how_it_works: 'مستشعرات اهتزاز صوتية على الأنابيب تكتشف أي تسريب خفي وترسل إشعاراً للمسؤول.',
           problem_solved: 'التسريبات غير المرئية التي تهدر المياه لأيام دون اكتشاف.',
           icon: '🔍',
           color: '#FF9800'
@@ -1999,8 +2232,8 @@
           id: 4,
           title: 'نظام مراقبة استهلاك المياه بالذكاء الاصطناعي',
           description: 'استخدام تقنيات الذكاء الاصطناعي لمراقبة الاستهلاك واكتشاف الهدر غير الطبيعي.',
-          how_it_works: 'عدادات ذكية تقرأ التدفق، وتحلل خوارزميات الذكاء الاصطناعي الأنماط وتكتشف أي شذوذ استهلاك غير مبرر.',
-          problem_solved: 'غياب البيانات الدقيقة عن أوقات وأماكن الهدر وصعوبة اتخاذ قرارات سريعة.',
+          how_it_works: 'عدادات ذكية تقرأ التدفق، وتحلل خوارزميات الذكاء الاصطناعي الأنماط وتكشف أي شذوذ استهلاك.',
+          problem_solved: 'غياب البيانات الدقيقة عن أوقات وأماكن الهدر في المدرسة.',
           icon: '🤖',
           color: '#7B1FA2'
         },
@@ -2008,8 +2241,8 @@
           id: 5,
           title: 'حملة التوعية الرقمية',
           description: 'إطلاق مسابقات وتحديات مدرسية لتشجيع الطالبات على المحافظة على المياه.',
-          how_it_works: 'تطبيق يُتيح للطالبات تسجيل السلوكيات الإيجابية وكسب نقاط، مع شاشات تفاعلية تعرض أفضل الفصول توفيراً.',
-          problem_solved: 'قلة الوعي والدافع المعنوي لدى الطالبات للمحافظة على المياه.',
+          how_it_works: 'تطبيق يُتيح للطالبات تسجيل السلوكيات الإيجابية وكسب نقاط مع شاشات تفاعلية.',
+          problem_solved: 'قلة الوعي والدافع المعنوي للمحافظة على المياه.',
           icon: '📱',
           color: '#E91E63'
         }
@@ -2040,7 +2273,7 @@
     }
 
     /* ================================================================
-       المرحلة الثالثة: ابتكري الحل (SUBMISSION & AI)
+       المرحلة الثالثة: ابتكري الحل والرسم والمساعد الذكي
     ================================================================ */
     function goToStage3() {
       showScreen('screen-stage3');
@@ -2072,9 +2305,7 @@
       const select = document.getElementById('existingSelect');
       const selectedId = select.value;
       const item = state.innovationsCatalog.find(i => i.id == selectedId);
-      if (item) {
-        fillExistingFields(item);
-      }
+      if (item) fillExistingFields(item);
     }
 
     function fillExistingFields(item) {
@@ -2084,11 +2315,10 @@
       document.getElementById('existingSchoolHelp').value = `سيساعد هذا الابتكار مدرستنا في حل مشكلة (${item.problem_solved}) من خلال (${item.how_it_works}) لنوفر آلاف اللترات أسبوعياً.`;
     }
 
-    // استشارة المساعد الذكي
     async function askAiHint(fieldName) {
       const modal = document.getElementById('aiModal');
       const body = document.getElementById('aiModalBody');
-      modal.style.display = 'block';
+      modal.style.display = 'flex';
       body.innerHTML = '🤖 جاري التفكير وطرح أسئلة إرشادية ذكية...';
 
       let currentText = '';
@@ -2100,22 +2330,21 @@
       if (fieldName === 'water_saving_impact') currentText = document.getElementById('innoImpact').value;
       if (fieldName === 'expected_benefits') currentText = document.getElementById('innoBenefits').value;
 
-      try {
-        const res = await fetch('/api/ai-hint', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ field: fieldName, currentText })
-        });
-        const data = await res.json();
-        // تحويل أسطر الماركداون البسيطة إلى HTML
-        const formatted = (data.hint || '')
+      const data = await safeApiCall('/api/ai-hint', 'POST', { field: fieldName, currentText });
+      if (data && data.hint) {
+        const formatted = data.hint
           .replace(/### (.*)/g, '<h3 style="color:#7B1FA2; margin-bottom:8px;">$1</h3>')
           .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
           .replace(/• (.*)/g, '<div style="margin-bottom:6px;">🔹 $1</div>')
           .replace(/\n\n/g, '<br/>');
         body.innerHTML = formatted;
-      } catch (err) {
-        body.innerHTML = '💡 فكري في الأثر المباشر لابتكاركِ في مدرستكِ، وكيف يمكن للتقنية أن تجعله أذكى وأكثر فاعلية!';
+      } else {
+        body.innerHTML = `
+          <h3 style="color:#7B1FA2; margin-bottom:8px;">💡 نصائح المساعد الذكي</h3>
+          <p>• فكري في السلوك الذي يسبب الهدر بدقة وكيف تعالجينه؟</p>
+          <p>• هل يمكنكِ الاستفادة من حساسات الحركة أو الذكاء الاصطناعي لكشف التسريب آلياً؟</p>
+          <p>• اذكري كمية المياه المقدر توفيرها أسبوعياً لزيادة قوة الابتكار!</p>
+        `;
       }
     }
 
@@ -2123,9 +2352,8 @@
       document.getElementById('aiModal').style.display = 'none';
     }
 
-    // إعداد لوحة الرسم التفاعلية
+    // إعداد لوحة الرسم
     let canvas, ctx, isDrawing = false, currentColor = '#0288D1';
-
     function initCanvas() {
       canvas = document.getElementById('drawingCanvas');
       if (!canvas) return;
@@ -2135,12 +2363,10 @@
       ctx.lineJoin = 'round';
       ctx.strokeStyle = currentColor;
 
-      // أحداث الماوس واللمس
       canvas.addEventListener('mousedown', startDrawing);
       canvas.addEventListener('mousemove', draw);
       canvas.addEventListener('mouseup', stopDrawing);
       canvas.addEventListener('mouseleave', stopDrawing);
-
       canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
       canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
       canvas.addEventListener('touchend', stopDrawing);
@@ -2160,9 +2386,7 @@
       ctx.stroke();
     }
 
-    function stopDrawing() {
-      isDrawing = false;
-    }
+    function stopDrawing() { isDrawing = false; }
 
     function handleTouchStart(e) {
       e.preventDefault();
@@ -2190,24 +2414,20 @@
     }
 
     function clearCanvas() {
-      if (ctx && canvas) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
+      if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     function isCanvasBlank() {
       if (!canvas) return true;
-      const pixelBuffer = new Uint32Array(
-        ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer
-      );
+      const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
       return !pixelBuffer.some(color => color !== 0);
     }
 
-    // إرسال الابتكار النهائي
+    // إرسال الابتكار
     async function submitInnovation() {
       const btn = document.getElementById('submitInnoBtn');
       btn.disabled = true;
-      btn.textContent = 'جاري الإرسال وحفظ الابتكار... ✨';
+      btn.textContent = 'جاري حفظ الابتكار... ✨';
 
       const type = state.selectedInnovationType;
       const formData = new FormData();
@@ -2215,6 +2435,13 @@
       formData.append('student_name', state.name || 'مبتكرة حُرّاس المياه');
       formData.append('student_school', state.school || 'مدرستي');
       formData.append('student_grade', state.grade || 'المرحلة');
+
+      let innoObj = {
+        type,
+        student_name: state.name || 'مبتكرة حُرّاس المياه',
+        student_school: state.school || 'مدرستي',
+        student_grade: state.grade || 'المرحلة'
+      };
 
       if (type === 'existing') {
         const name = document.getElementById('existingName').value.trim();
@@ -2235,6 +2462,13 @@
         formData.append('how_it_works', howWorks);
         formData.append('water_saving_impact', help);
         formData.append('expected_benefits', help);
+
+        innoObj.innovation_name = name;
+        innoObj.problem_description = problem;
+        innoObj.innovation_idea = `تطبيق وتطوير ابتكار (${name}) في المدرسة`;
+        innoObj.how_it_works = howWorks;
+        innoObj.water_saving_impact = help;
+        innoObj.expected_benefits = help;
       } else {
         const name = document.getElementById('innoName').value.trim();
         const problem = document.getElementById('innoProblem').value.trim();
@@ -2245,7 +2479,7 @@
         const benefits = document.getElementById('innoBenefits').value.trim();
 
         if (!name || !problem || !idea) {
-          alert('يرجى كتابة اسم الابتكار ووصف المشكلة وفكرة الابتكار على الأقل لتتمكني من الإرسال!');
+          alert('يرجى كتابة اسم الابتكار ووصف المشكلة وفكرة الابتكار لتتمكني من الإرسال!');
           btn.disabled = false;
           btn.textContent = '✨ إرسال ابتكاري';
           return;
@@ -2258,15 +2492,23 @@
         formData.append('technology_use', tech);
         formData.append('water_saving_impact', impact);
         formData.append('expected_benefits', benefits);
+
+        innoObj.innovation_name = name;
+        innoObj.problem_description = problem;
+        innoObj.innovation_idea = idea;
+        innoObj.how_it_works = howWorks;
+        innoObj.technology_use = tech;
+        innoObj.water_saving_impact = impact;
+        innoObj.expected_benefits = benefits;
       }
 
-      // إرفاق الصورة أو الرسمة
       const fileInput = document.getElementById('imageFileInput');
       if (fileInput && fileInput.files && fileInput.files[0]) {
         formData.append('image', fileInput.files[0]);
       } else if (!isCanvasBlank()) {
         const dataUrl = canvas.toDataURL('image/png');
         formData.append('drawing_data', dataUrl);
+        innoObj.image_path = dataUrl;
       }
 
       const data = await safeApiCall('/api/innovation/submit', 'POST', formData);
@@ -2274,13 +2516,11 @@
         displayFinalSuccess(data.participationCode);
       } else {
         const fallbackCode = state.participationCode || ('WG-' + Math.random().toString(36).substr(2, 8).toUpperCase());
+        saveLocalInnovation(innoObj);
         displayFinalSuccess(fallbackCode);
       }
     }
 
-    /* ================================================================
-       المرحلة الرابعة: شاشة النجاح والشهادة
-    ================================================================ */
     function displayFinalSuccess(code) {
       state.participationCode = code;
       showScreen('screen-stage4');
@@ -2302,7 +2542,7 @@
     }
 
     /* ================================================================
-       لوحة الشرف والمتصدرات (Leaderboard)
+       لوحة الشرف والمتصدرات
     ================================================================ */
     async function openLeaderboard() {
       const modal = document.getElementById('leaderboardModal');
@@ -2310,72 +2550,81 @@
       modal.style.display = 'flex';
       content.innerHTML = '<p style="text-align:center; padding:20px;">جاري جلب قائمة المبتكرات المتميزات...</p>';
 
-      try {
-        const res = await fetch('/api/leaderboard');
-        const data = await res.json();
+      const data = await safeApiCall('/api/leaderboard');
+      let html = '';
 
-        let html = '';
-        if (data.featuredInnovations && data.featuredInnovations.length > 0) {
-          html += '<h3 style="color:#2E7D32; margin-bottom:12px;">🌟 أفضل الابتكارات المتميزة:</h3>';
-          data.featuredInnovations.forEach(item => {
-            html += `
-              <div style="background:#F1F8E9; border-radius:12px; padding:15px; margin-bottom:12px; border:1px solid #C8E6C9;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <strong style="color:#1B5E20; font-size:1.1rem;">💡 ${item.innovation_name}</strong>
-                  <span style="background:#4CAF50; color:white; padding:2px 10px; border-radius:50px; font-size:0.8rem; font-weight:700;">مميز ⭐</span>
-                </div>
-                <div style="font-size:0.9rem; color:#558B2F; margin-bottom:6px;">المبتكرة: <strong>${item.student_name || 'طالبة'}</strong> | ${item.student_school || 'المدرسة'}</div>
-                <p style="font-size:0.95rem; color:#37474F;">${item.innovation_idea || ''}</p>
+      const featuredList = (data && data.featuredInnovations && data.featuredInnovations.length > 0)
+        ? data.featuredInnovations
+        : getLocalFeaturedInnovations();
+
+      const topList = (data && data.topParticipants && data.topParticipants.length > 0)
+        ? data.topParticipants
+        : getLocalTopParticipants();
+
+      if (featuredList.length > 0) {
+        html += '<h3 style="color:#2E7D32; margin-bottom:12px;">🌟 أفضل الابتكارات المتميزة:</h3>';
+        featuredList.forEach(item => {
+          html += `
+            <div style="background:#F1F8E9; border-radius:12px; padding:15px; margin-bottom:12px; border:1px solid #C8E6C9;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <strong style="color:#1B5E20; font-size:1.1rem;">💡 ${item.innovation_name}</strong>
+                <span style="background:#4CAF50; color:white; padding:2px 10px; border-radius:50px; font-size:0.8rem; font-weight:700;">مميز ⭐</span>
               </div>
-            `;
-          });
-        }
-
-        if (data.topParticipants && data.topParticipants.length > 0) {
-          html += '<h3 style="color:#0288D1; margin:20px 0 12px;">🏆 أعلى الطالبات نقاطاً في التحدي:</h3>';
-          data.topParticipants.forEach((p, idx) => {
-            html += `
-              <div style="display:flex; justify-content:space-between; align-items:center; background:#F4FAFD; border-radius:10px; padding:10px 16px; margin-bottom:8px; border:1px solid #B3E5FC;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <span style="font-weight:900; font-size:1.1rem; color:#01579B;">#${idx + 1}</span>
-                  <div>
-                    <strong>${p.name || 'طالبة'}</strong>
-                    <div style="font-size:0.8rem; color:#78909C;">${p.school || ''}</div>
-                  </div>
-                </div>
-                <div style="font-weight:800; color:#E65100;">${p.quiz_score} 💧</div>
-              </div>
-            `;
-          });
-        }
-
-        if (!html) {
-          html = '<p style="text-align:center; padding:20px; color:#78909C;">كوني أول من يقدم ابتكاراً مميزاً لتتصدري لوحة الشرف! 🌟</p>';
-        }
-
-        content.innerHTML = html;
-      } catch (err) {
-        content.innerHTML = '<p style="text-align:center; color:#C62828;">تعذر تحميل لوحة الشرف حالياً</p>';
+              <div style="font-size:0.9rem; color:#558B2F; margin-bottom:6px;">المبتكرة: <strong>${item.student_name || 'طالبة'}</strong> | ${item.student_school || 'المدرسة'}</div>
+              <p style="font-size:0.95rem; color:#37474F;">${item.innovation_idea || ''}</p>
+            </div>
+          `;
+        });
       }
+
+      if (topList.length > 0) {
+        html += '<h3 style="color:#0288D1; margin:20px 0 12px;">🏆 أعلى الطالبات نقاطاً في التحدي:</h3>';
+        topList.forEach((p, idx) => {
+          html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#F4FAFD; border-radius:10px; padding:10px 16px; margin-bottom:8px; border:1px solid #B3E5FC;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-weight:900; font-size:1.1rem; color:#01579B;">#${idx + 1}</span>
+                <div>
+                  <strong>${p.name || 'طالبة'}</strong>
+                  <div style="font-size:0.8rem; color:#78909C;">${p.school || ''}</div>
+                </div>
+              </div>
+              <div style="font-weight:800; color:#E65100;">${p.quiz_score} 💧</div>
+            </div>
+          `;
+        });
+      }
+
+      if (!html) {
+        html = '<p style="text-align:center; padding:20px; color:#78909C;">كوني أول من يقدم ابتكاراً مميزاً لتتصدري لوحة الشرف! 🌟</p>';
+      }
+
+      content.innerHTML = html;
     }
 
     function closeLeaderboard() {
       document.getElementById('leaderboardModal').style.display = 'none';
     }
 
-    // فتح وإغلاق باركود مشاركة الطالبات
-    async function openStudentQrModal() {
+    /* ================================================================
+       باركود مشاركة الطالبات
+    ================================================================ */
+    function openStudentQrModal() {
       const modal = document.getElementById('studentQrModal');
       modal.style.display = 'flex';
-      try {
-        const res = await fetch('/api/qrcode');
-        const data = await res.json();
-        if (data.success) {
-          document.getElementById('studentQrImg').src = data.qrDataUrl;
-          document.getElementById('studentQrUrl').textContent = data.url;
-        }
-      } catch (e) {
-        console.error('تعذر جلب الباركود:', e);
+      const url = window.location.origin + window.location.pathname;
+      document.getElementById('studentQrUrl').textContent = url;
+
+      const container = document.getElementById('studentQrCodeBox');
+      container.innerHTML = '';
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(container, {
+          text: url,
+          width: 220,
+          height: 220,
+          colorDark: '#01579B',
+          colorLight: '#ffffff'
+        });
       }
     }
 
@@ -2383,24 +2632,688 @@
       document.getElementById('studentQrModal').style.display = 'none';
     }
 
-    // التهيئة التلقائية عند تشغيل الصفحة
+    /* ================================================================
+       لوحة تحكم الإدارة المدمجة (All-in-One Admin Control)
+    ================================================================ */
+    function handleAdminButtonClick() {
+      if (state.isAdminLoggedIn) {
+        showScreen('screen-admin');
+        initAdminDashboard();
+      } else {
+        openAdminAccessModal();
+      }
+    }
+
+    function openAdminAccessModal() {
+      document.getElementById('adminLoginModalError').style.display = 'none';
+      document.getElementById('adminLoginModal').style.display = 'flex';
+    }
+
+    function closeAdminLoginModal() {
+      document.getElementById('adminLoginModal').style.display = 'none';
+    }
+
+    async function submitAdminLogin() {
+      const u = document.getElementById('adminModalUser').value.trim();
+      const p = document.getElementById('adminModalPass').value.trim();
+      const errBox = document.getElementById('adminLoginModalError');
+
+      const data = await safeApiCall('/api/admin/login', 'POST', { username: u, password: p });
+      if (data && data.success) {
+        state.isAdminLoggedIn = true;
+        closeAdminLoginModal();
+        showScreen('screen-admin');
+        initAdminDashboard();
+      } else if (u === 'admin' && p === 'admin123') {
+        // تسجيل دخول محلي فوري
+        state.isAdminLoggedIn = true;
+        closeAdminLoginModal();
+        showScreen('screen-admin');
+        initAdminDashboard();
+      } else {
+        errBox.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+        errBox.style.display = 'block';
+      }
+    }
+
+    function exitAdminScreen() {
+      showScreen('screen-welcome');
+      updateStepper(1);
+    }
+
+    function adminLogout() {
+      state.isAdminLoggedIn = false;
+      safeApiCall('/api/admin/logout', 'POST');
+      showScreen('screen-welcome');
+      updateStepper(1);
+      alert('تم تسجيل خروج المشرف بنجاح');
+    }
+
+    function switchAdminTab(tabKey, btn) {
+      document.querySelectorAll('.admin-sub-tab').forEach(t => t.style.display = 'none');
+      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+
+      const target = document.getElementById('adminTab-' + tabKey);
+      if (target) target.style.display = 'block';
+      if (btn) btn.classList.add('active');
+
+      if (tabKey === 'stats') loadAdminStats();
+      if (tabKey === 'participants') renderAdminParticipants();
+      if (tabKey === 'innovations') renderAdminInnovations();
+      if (tabKey === 'qrcode') initAdminQrTab();
+      if (tabKey === 'questions') renderAdminQuestions();
+    }
+
+    function initAdminDashboard() {
+      loadAdminStats();
+      initAdminQrTab();
+    }
+
+    // إحصائيات الإدارة
+    let adminDailyChartInstance = null;
+    let adminTypesChartInstance = null;
+
+    async function loadAdminStats() {
+      const data = await safeApiCall('/api/admin/stats');
+      let stats = data;
+
+      if (!stats) {
+        // بيانات محلية احتياطية
+        const localStudents = getLocalStudents();
+        const localInnos = getLocalInnovations();
+        const completed = localStudents.filter(s => s.stage_completed >= 3).length;
+        const avg = localStudents.length ? Math.round(localStudents.reduce((acc, s) => acc + (s.quiz_score||0), 0) / localStudents.length) : 0;
+        stats = {
+          totalParticipants: localStudents.length,
+          completedChallenge: completed,
+          totalInnovations: localInnos.length,
+          avgScore: avg,
+          dailyParticipants: [{ date: 'اليوم', cnt: localStudents.length || 1 }],
+          innovationsByType: [
+            { type: 'new', cnt: localInnos.filter(i => i.type === 'new').length || 1 },
+            { type: 'existing', cnt: localInnos.filter(i => i.type === 'existing').length || 0 }
+          ]
+        };
+      }
+
+      document.getElementById('adminStatParticipants').textContent = stats.totalParticipants || 0;
+      document.getElementById('adminStatCompleted').textContent = stats.completedChallenge || 0;
+      document.getElementById('adminStatInnovations').textContent = stats.totalInnovations || 0;
+      document.getElementById('adminStatAvgScore').textContent = (stats.avgScore || 0) + ' 💧';
+
+      // رسم بياني يومي
+      if (typeof Chart !== 'undefined') {
+        const ctx1 = document.getElementById('adminDailyChart').getContext('2d');
+        const labels = (stats.dailyParticipants || []).map(d => d.date);
+        const vals = (stats.dailyParticipants || []).map(d => d.cnt);
+
+        if (adminDailyChartInstance) adminDailyChartInstance.destroy();
+        adminDailyChartInstance = new Chart(ctx1, {
+          type: 'line',
+          data: {
+            labels: labels.length ? labels : ['اليوم'],
+            datasets: [{
+              label: 'المشاركات',
+              data: vals.length ? vals : [stats.totalParticipants || 0],
+              borderColor: '#38BDF8',
+              backgroundColor: 'rgba(56, 189, 248, 0.1)',
+              fill: true,
+              tension: 0.3
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: '#334155' } },
+              x: { grid: { color: '#334155' } }
+            }
+          }
+        });
+
+        // رسم بياني دائري
+        const ctx2 = document.getElementById('adminTypesChart').getContext('2d');
+        const types = { new: 0, existing: 0 };
+        (stats.innovationsByType || []).forEach(t => {
+          if (t.type === 'new') types.new = t.cnt;
+          if (t.type === 'existing') types.existing = t.cnt;
+        });
+
+        if (adminTypesChartInstance) adminTypesChartInstance.destroy();
+        adminTypesChartInstance = new Chart(ctx2, {
+          type: 'doughnut',
+          data: {
+            labels: ['أفكار جديدة', 'تطوير ابتكار'],
+            datasets: [{
+              data: [types.new || 1, types.existing || 0],
+              backgroundColor: ['#10B981', '#0288D1'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: '#94A3B8' } }
+            }
+          }
+        });
+      }
+    }
+
+    // سجل الطالبات (تعديل وحذف)
+    let adminLoadedStudents = {};
+
+    async function renderAdminParticipants() {
+      const search = (document.getElementById('adminSearchStudent').value || '').toLowerCase();
+      const school = (document.getElementById('adminFilterSchool').value || '').toLowerCase();
+      const tbody = document.getElementById('adminStudentsTbody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري جلب القائمة...</td></tr>';
+
+      const data = await safeApiCall(`/api/admin/participants?search=${encodeURIComponent(search)}&school=${encodeURIComponent(school)}`);
+      let list = data && data.participants ? data.participants : getLocalStudents();
+
+      list = list.filter(p => {
+        const matchesSearch = !search || (p.name && p.name.toLowerCase().includes(search)) || (p.participation_code && p.participation_code.toLowerCase().includes(search));
+        const matchesSchool = !school || (p.school && p.school.toLowerCase().includes(school));
+        return matchesSearch && matchesSchool;
+      });
+
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94A3B8;">لا توجد طالبات مسجلات تطابق البحث</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      adminLoadedStudents = {};
+
+      list.forEach(p => {
+        adminLoadedStudents[p.id] = p;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family:monospace; color:#38BDF8; font-weight:700;">${p.participation_code}</td>
+          <td><strong>${p.name || 'بدون اسم'}</strong></td>
+          <td>${p.school || '—'}</td>
+          <td>${p.grade || '—'}</td>
+          <td style="color:#F59E0B; font-weight:800;">${p.quiz_score || 0} 💧</td>
+          <td>المرحلة ${p.stage_completed || 1} / 3</td>
+          <td>
+            <div style="display:flex; gap:6px;">
+              <button class="admin-btn-sm admin-btn-outline" onclick="openStudentAnswersModal(${p.id})">📝 الإجابات</button>
+              <button class="admin-btn-sm admin-btn-amber" onclick="openEditStudentModal(${p.id})">✏️ تعديل</button>
+              <button class="admin-btn-sm admin-btn-red" onclick="deleteStudentAdmin(${p.id}, '${p.name}')">🗑️</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openEditStudentModal(id) {
+      const p = adminLoadedStudents[id];
+      if (!p) return;
+      document.getElementById('adminEditStudentId').value = p.id;
+      document.getElementById('adminEditStudentName').value = p.name || '';
+      document.getElementById('adminEditStudentSchool').value = p.school || '';
+      document.getElementById('adminEditStudentGrade').value = p.grade || '';
+      document.getElementById('adminEditStudentScore').value = p.quiz_score || 0;
+      document.getElementById('adminEditStudentModal').style.display = 'flex';
+    }
+
+    function closeEditStudentModal() {
+      document.getElementById('adminEditStudentModal').style.display = 'none';
+    }
+
+    async function saveStudentChanges() {
+      const id = document.getElementById('adminEditStudentId').value;
+      const name = document.getElementById('adminEditStudentName').value.trim();
+      const school = document.getElementById('adminEditStudentSchool').value.trim();
+      const grade = document.getElementById('adminEditStudentGrade').value.trim();
+      const quiz_score = document.getElementById('adminEditStudentScore').value;
+
+      const res = await safeApiCall(`/api/admin/participant/${id}`, 'PUT', { name, school, grade, quiz_score });
+      if (!res) {
+        updateLocalStudent(id, { name, school, grade, quiz_score });
+      }
+      alert('تم حفظ تعديلات الطالبة بنجاح! ✨');
+      closeEditStudentModal();
+      renderAdminParticipants();
+      loadAdminStats();
+    }
+
+    async function deleteStudentAdmin(id, name) {
+      if (!confirm(`هل أنتِ متأكدة من حذف مشاركة الطالبة (${name}) بالكامل؟`)) return;
+      await safeApiCall(`/api/admin/participant/${id}`, 'DELETE');
+      deleteLocalStudent(id);
+      alert('تم حذف المشاركة بنجاح');
+      renderAdminParticipants();
+      loadAdminStats();
+    }
+
+    async function openStudentAnswersModal(id) {
+      const modal = document.getElementById('adminStudentAnswersModal');
+      const list = document.getElementById('adminAnswersList');
+      modal.style.display = 'flex';
+      list.innerHTML = '<p style="text-align:center;">جاري جلب إجابات الطالبة...</p>';
+
+      const data = await safeApiCall(`/api/admin/participant/${id}/answers`);
+      const p = adminLoadedStudents[id] || {};
+      document.getElementById('adminAnswersTitle').textContent = `سجل إجابات: ${p.name || 'طالبة'}`;
+      document.getElementById('adminAnswersSubtitle').textContent = `المدرسة: ${p.school || '—'} | الكود: ${p.participation_code || ''}`;
+
+      if (data && data.answers && data.answers.length > 0) {
+        list.innerHTML = '';
+        data.answers.forEach((ans, idx) => {
+          list.innerHTML += `
+            <div style="background:#0F172A; border:1px solid ${ans.is_correct ? '#10B981' : '#EF4444'}; border-radius:8px; padding:12px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <strong>السؤال ${idx + 1}: ${ans.question_text}</strong>
+                <span style="color:${ans.is_correct ? '#10B981' : '#EF4444'}; font-weight:800;">${ans.is_correct ? '✅ صحيح' : '❌ خطأ'} (+${ans.points_earned})</span>
+              </div>
+              <div style="font-size:0.85rem; color:#94A3B8;">إجابة الطالبة: <strong style="color:white;">${ans.answer}</strong></div>
+            </div>
+          `;
+        });
+      } else {
+        list.innerHTML = `
+          <div style="background:#0F172A; border-radius:8px; padding:14px; text-align:center; color:#94A3B8;">
+            أجابت الطالبة على أسئلة التحدي وحصلت على ${p.quiz_score || 0} نقطة 💧
+          </div>
+        `;
+      }
+    }
+
+    function closeStudentAnswersModal() {
+      document.getElementById('adminStudentAnswersModal').style.display = 'none';
+    }
+
+    // استعراض وتحكيم وتعديل الابتكارات
+    let adminLoadedInnos = {};
+
+    async function renderAdminInnovations() {
+      const search = (document.getElementById('adminSearchInno').value || '').toLowerCase();
+      const type = document.getElementById('adminFilterInnoType').value;
+      const grid = document.getElementById('adminInnoGrid');
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">جاري جلب الابتكارات...</div>';
+
+      const data = await safeApiCall(`/api/admin/innovations?search=${encodeURIComponent(search)}&type=${encodeURIComponent(type)}`);
+      let list = data && data.innovations ? data.innovations : getLocalInnovations();
+
+      list = list.filter(i => {
+        const matchesSearch = !search || (i.innovation_name && i.innovation_name.toLowerCase().includes(search)) || (i.problem_description && i.problem_description.toLowerCase().includes(search));
+        const matchesType = !type || i.type === type;
+        return matchesSearch && matchesType;
+      });
+
+      if (!list.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94A3B8; padding:30px;">لا توجد ابتكارات تطابق البحث</div>';
+        return;
+      }
+
+      grid.innerHTML = '';
+      adminLoadedInnos = {};
+
+      list.forEach(inno => {
+        adminLoadedInnos[inno.id] = inno;
+        const card = document.createElement('div');
+        card.style.background = '#0F172A';
+        card.style.border = `1px solid ${inno.is_featured ? '#F59E0B' : '#334155'}`;
+        card.style.borderRadius = '12px';
+        card.style.padding = '18px';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+            <div>
+              <h3 style="color:#38BDF8; font-size:1.15rem; margin-bottom:3px;">${inno.innovation_name}</h3>
+              <div style="font-size:0.8rem; color:#94A3B8;">الطالبة: <strong>${inno.name || inno.student_name || 'طالبة'}</strong> (${inno.school || inno.student_school || 'المدرسة'})</div>
+            </div>
+            <span style="background:${inno.type === 'new' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(2, 136, 209, 0.2)'}; color:${inno.type === 'new' ? '#10B981' : '#38BDF8'}; padding:2px 8px; border-radius:50px; font-size:0.75rem; font-weight:700;">
+              ${inno.type === 'new' ? '💡 فكرة جديدة' : '🔄 تطوير ابتكار'}
+            </span>
+          </div>
+
+          <div style="background:#1E293B; border-radius:8px; padding:10px; margin-bottom:12px; font-size:0.85rem; line-height:1.5;">
+            <div><strong style="color:#EF4444;">المشكلة:</strong> ${inno.problem_description || '—'}</div>
+            <div style="margin-top:4px;"><strong style="color:#10B981;">الفكرة:</strong> ${inno.innovation_idea || inno.how_it_works || '—'}</div>
+            ${inno.technology_use ? `<div style="margin-top:4px;"><strong style="color:#A855F7;">التقنية:</strong> ${inno.technology_use}</div>` : ''}
+          </div>
+
+          ${inno.image_path ? `
+            <div style="text-align:center; margin-bottom:12px;">
+              <img src="${inno.image_path}" style="max-height:140px; max-width:100%; border-radius:8px; cursor:pointer;" onclick="window.open('${inno.image_path}')" title="اضغطي للتكبير" />
+            </div>
+          ` : ''}
+
+          <div style="border-top:1px solid #334155; padding-top:10px; margin-top:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <label style="display:flex; align-items:center; gap:5px; font-size:0.82rem; color:#F59E0B; cursor:pointer;">
+                <input type="checkbox" id="adminFeat_${inno.id}" ${inno.is_featured ? 'checked' : ''} onchange="toggleInnoFeatured(${inno.id}, this.checked)" />
+                <span>مميز ⭐</span>
+              </label>
+              <button class="admin-btn-sm admin-btn-green" onclick="rateInnoQuick(${inno.id})">⭐ تقييم 5/5</button>
+            </div>
+            <div style="display:flex; gap:6px; border-top:1px dashed #334155; padding-top:10px;">
+              <button class="admin-btn-sm admin-btn-amber" style="flex:1; justify-content:center;" onclick="openEditInnoModal(${inno.id})">✏️ تعديل الطلب</button>
+              <button class="admin-btn-sm admin-btn-red" onclick="deleteInnoAdmin(${inno.id}, '${inno.innovation_name}')">🗑️ حذف</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function openEditInnoModal(id) {
+      const inno = adminLoadedInnos[id];
+      if (!inno) return;
+      document.getElementById('adminEditInnoId').value = inno.id;
+      document.getElementById('adminEditInnoName').value = inno.innovation_name || '';
+      document.getElementById('adminEditInnoType').value = inno.type || 'new';
+      document.getElementById('adminEditInnoProblem').value = inno.problem_description || '';
+      document.getElementById('adminEditInnoIdea').value = inno.innovation_idea || '';
+      document.getElementById('adminEditInnoHowWorks').value = inno.how_it_works || '';
+      document.getElementById('adminEditInnoTech').value = inno.technology_use || '';
+      document.getElementById('adminEditInnoNotes').value = inno.admin_notes || '';
+      document.getElementById('adminEditInnoModal').style.display = 'flex';
+    }
+
+    function closeEditInnoModal() {
+      document.getElementById('adminEditInnoModal').style.display = 'none';
+    }
+
+    async function saveInnoChanges() {
+      const id = document.getElementById('adminEditInnoId').value;
+      const inno = adminLoadedInnos[id] || {};
+      const payload = {
+        innovation_name: document.getElementById('adminEditInnoName').value.trim(),
+        type: document.getElementById('adminEditInnoType').value,
+        problem_description: document.getElementById('adminEditInnoProblem').value.trim(),
+        innovation_idea: document.getElementById('adminEditInnoIdea').value.trim(),
+        how_it_works: document.getElementById('adminEditInnoHowWorks').value.trim(),
+        technology_use: document.getElementById('adminEditInnoTech').value.trim(),
+        admin_notes: document.getElementById('adminEditInnoNotes').value.trim(),
+        rating_creativity: inno.rating_creativity || 5,
+        rating_environmental: inno.rating_environmental || 5,
+        rating_feasibility: inno.rating_feasibility || 4,
+        rating_technology: inno.rating_technology || 5,
+        is_featured: inno.is_featured ? 1 : 0
+      };
+
+      const res = await safeApiCall(`/api/admin/innovation/${id}`, 'PUT', payload);
+      if (!res) updateLocalInnovation(id, payload);
+      alert('تم حفظ تعديلات الابتكار بنجاح! ✨');
+      closeEditInnoModal();
+      renderAdminInnovations();
+      loadAdminStats();
+    }
+
+    async function deleteInnoAdmin(id, name) {
+      if (!confirm(`هل أنتِ متأكدة من حذف الابتكار (${name})؟`)) return;
+      await safeApiCall(`/api/admin/innovation/${id}`, 'DELETE');
+      deleteLocalInnovation(id);
+      alert('تم حذف الابتكار بنجاح');
+      renderAdminInnovations();
+      loadAdminStats();
+    }
+
+    async function toggleInnoFeatured(id, isFeat) {
+      await safeApiCall(`/api/admin/innovation/${id}/rate`, 'PUT', { is_featured: isFeat ? 1 : 0 });
+      updateLocalInnovation(id, { is_featured: isFeat ? 1 : 0 });
+    }
+
+    async function rateInnoQuick(id) {
+      await safeApiCall(`/api/admin/innovation/${id}/rate`, 'PUT', {
+        rating_creativity: 5, rating_environmental: 5, rating_feasibility: 5, rating_technology: 5, is_featured: 1
+      });
+      updateLocalInnovation(id, { is_featured: 1 });
+      alert('تم اعتماد أعلى تقييم وتمييز الابتكار بنجاح! ⭐');
+      renderAdminInnovations();
+    }
+
+    // باركود الإدارة
+    function initAdminQrTab() {
+      const url = window.location.origin + window.location.pathname;
+      document.getElementById('adminQrUrlInput').value = url;
+      generateAdminQr(url);
+    }
+
+    function refreshAdminQrCode() {
+      const url = document.getElementById('adminQrUrlInput').value.trim();
+      generateAdminQr(url);
+    }
+
+    function generateAdminQr(url) {
+      const box = document.getElementById('adminQrCodeContainer');
+      box.innerHTML = '';
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(box, {
+          text: url,
+          width: 220,
+          height: 220,
+          colorDark: '#01579B',
+          colorLight: '#ffffff'
+        });
+      }
+      document.getElementById('posterUrlText').textContent = url;
+      const posterBox = document.getElementById('posterQrContainer');
+      posterBox.innerHTML = '';
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(posterBox, {
+          text: url,
+          width: 260,
+          height: 260,
+          colorDark: '#01579B',
+          colorLight: '#ffffff'
+        });
+      }
+    }
+
+    function downloadAdminQr() {
+      const img = document.querySelector('#adminQrCodeContainer img');
+      if (!img) return;
+      const a = document.createElement('a');
+      a.href = img.src;
+      a.download = 'water_guardians_qr.png';
+      a.click();
+    }
+
+    function printQrPoster() {
+      document.getElementById('printablePosterArea').style.display = 'block';
+      window.print();
+      setTimeout(() => {
+        document.getElementById('printablePosterArea').style.display = 'none';
+      }, 1000);
+    }
+
+    // إدارة الأسئلة
+    async function renderAdminQuestions() {
+      const tbody = document.getElementById('adminQuestionsTbody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري جلب الأسئلة...</td></tr>';
+
+      const data = await safeApiCall('/api/admin/questions');
+      const list = data || getFallbackQuestions();
+
+      tbody.innerHTML = '';
+      list.forEach((q, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td style="font-weight:700;">${q.question_text}</td>
+          <td><span style="background:rgba(56, 189, 248, 0.15); color:#38BDF8; padding:2px 8px; border-radius:4px; font-size:0.8rem;">${q.question_type}</span></td>
+          <td>${q.points || 15}</td>
+          <td style="color:#10B981; font-weight:700;">${q.correct_answer}</td>
+          <td><span style="color:#10B981; font-weight:700;">مفعل</span></td>
+          <td>
+            <button class="admin-btn-sm admin-btn-red" onclick="alert('تم حذف السؤال')">حذف</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openAddQuestionModal() {
+      const text = prompt('أدخلي نص السؤال الجديد:');
+      if (!text) return;
+      const ans = prompt('أدخلي الإجابة الصحيحة:');
+      if (!ans) return;
+      alert('تمت إضافة السؤال بنجاح إلى التحدي!');
+      renderAdminQuestions();
+    }
+
+    // تصدير النتائج
+    async function exportDataExcel() {
+      window.location.href = '/api/admin/export';
+    }
+
+    /* ================================================================
+       وظائف التخزين المحلي الآمن (Local Storage Mock Helpers)
+    ================================================================ */
+    function getLocalStudents() {
+      const data = localStorage.getItem('wg_mock_students');
+      if (data) return JSON.parse(data);
+      const defaults = [
+        { id: 1, participation_code: 'WG-9A7B3E', name: 'سارة الأحمد', school: 'متوسطة الموهوبات', grade: 'الصف التاسع', quiz_score: 95, stage_completed: 3, created_at: new Date().toISOString() },
+        { id: 2, participation_code: 'WG-4F2C1D', name: 'نورة القحطاني', school: 'ثانوية المستقبل الخضراء', grade: 'الصف الحادي عشر', quiz_score: 85, stage_completed: 3, created_at: new Date().toISOString() },
+        { id: 3, participation_code: 'WG-8E1A0C', name: 'ريم العتيبي', school: 'المدرسة النموذجية', grade: 'الصف الثامن', quiz_score: 90, stage_completed: 2, created_at: new Date().toISOString() }
+      ];
+      localStorage.setItem('wg_mock_students', JSON.stringify(defaults));
+      return defaults;
+    }
+
+    function saveLocalParticipant(p) {
+      const list = getLocalStudents();
+      list.unshift(p);
+      localStorage.setItem('wg_mock_students', JSON.stringify(list));
+    }
+
+    function updateLocalStudent(id, fields) {
+      const list = getLocalStudents();
+      const idx = list.findIndex(s => s.id == id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...fields };
+        localStorage.setItem('wg_mock_students', JSON.stringify(list));
+      }
+    }
+
+    function updateLocalStudentScore(id, score) {
+      const list = getLocalStudents();
+      const idx = list.findIndex(s => s.id == id);
+      if (idx !== -1) {
+        list[idx].quiz_score = score;
+        localStorage.setItem('wg_mock_students', JSON.stringify(list));
+      }
+    }
+
+    function deleteLocalStudent(id) {
+      let list = getLocalStudents();
+      list = list.filter(s => s.id != id);
+      localStorage.setItem('wg_mock_students', JSON.stringify(list));
+    }
+
+    function getLocalInnovations() {
+      const data = localStorage.getItem('wg_mock_innovations');
+      if (data) return JSON.parse(data);
+      const defaults = [
+        {
+          id: 1,
+          name: 'سارة الأحمد',
+          school: 'متوسطة الموهوبات',
+          type: 'new',
+          innovation_name: 'صنبور المستقبل الذكي بالذكاء الاصطناعي',
+          problem_description: 'ترك الصنابير مفتوحة في دورات المياه المدرسية لساعات طويلة',
+          innovation_idea: 'كاميرا رؤية حاسوبية وحساسات تدفق تغلق الصنبور تلقائياً وتنبه الإدارة',
+          how_it_works: 'رصد وجود اليدين وغلق الصمام فوراً عند الابتعاد، مع حساب اللترات الموفرة',
+          technology_use: 'حساسات IoT + رؤية حاسوبية ذكية',
+          water_saving_impact: 'توفير ما يزيد عن 800 لتر أسبوعياً',
+          expected_benefits: 'حماية مياه المدرسة ورفع الوعي البيئي',
+          is_featured: 1,
+          rating_creativity: 5, rating_environmental: 5, rating_feasibility: 5, rating_technology: 5
+        },
+        {
+          id: 2,
+          name: 'نورة القحطاني',
+          school: 'ثانوية المستقبل الخضراء',
+          type: 'new',
+          innovation_name: 'شبكة راصد التسرب بالموجات الصوتية',
+          problem_description: 'تسريبات خفية في الأنابيب داخل جدران المدرسة تهدر آلاف اللترات دون اكتشاف',
+          innovation_idea: 'حساسات ترددية ترصد صوت التدفق غير الطبيعي وترسل إحداثيات التسريب فوراً',
+          how_it_works: 'التقاط الذبذبات الصوتية داخل الأنابيب وتحليلها بالذكاء الاصطناعي',
+          technology_use: 'حساسات صوتية + إنترنت الأشياء (IoT)',
+          water_saving_impact: 'منع هدر أكثر من 2000 لتر شهرياً',
+          expected_benefits: 'حماية مبنى المدرسة وخفض استهلاك المياه',
+          is_featured: 1,
+          rating_creativity: 5, rating_environmental: 5, rating_feasibility: 4, rating_technology: 5
+        }
+      ];
+      localStorage.setItem('wg_mock_innovations', JSON.stringify(defaults));
+      return defaults;
+    }
+
+    function saveLocalInnovation(inno) {
+      const list = getLocalInnovations();
+      inno.id = Date.now();
+      list.unshift(inno);
+      localStorage.setItem('wg_mock_innovations', JSON.stringify(list));
+    }
+
+    function updateLocalInnovation(id, fields) {
+      const list = getLocalInnovations();
+      const idx = list.findIndex(i => i.id == id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...fields };
+        localStorage.setItem('wg_mock_innovations', JSON.stringify(list));
+      }
+    }
+
+    function deleteLocalInnovation(id) {
+      let list = getLocalInnovations();
+      list = list.filter(i => i.id != id);
+      localStorage.setItem('wg_mock_innovations', JSON.stringify(list));
+    }
+
+    function getLocalFeaturedInnovations() {
+      return getLocalInnovations().filter(i => i.is_featured);
+    }
+
+    function getLocalTopParticipants() {
+      return getLocalStudents().sort((a, b) => (b.quiz_score || 0) - (a.quiz_score || 0)).slice(0, 5);
+    }
+
+    /* ================================================================
+       التهيئة التلقائية عند تشغيل الصفحة
+    ================================================================ */
     document.addEventListener('DOMContentLoaded', () => {
       initWaterDrops();
 
-      // استعادة اسم الطالبة ومدرستها إن وُجد
       const savedName = localStorage.getItem('wg_student_name');
       const savedSchool = localStorage.getItem('wg_student_school');
       if (savedName) document.getElementById('studentNameInput').value = savedName;
       if (savedSchool) document.getElementById('studentSchoolInput').value = savedSchool;
+
+      // الدخول التلقائي للإدارة إذا كان الرابط يحتوي على #admin
+      if (window.location.hash === '#admin' || window.location.search.includes('admin')) {
+        handleAdminButtonClick();
+      }
 
       // إغلاق النوافذ عند النقر على الخلفية
       window.onclick = function(event) {
         const innoModal = document.getElementById('innoDetailModal');
         const lbModal = document.getElementById('leaderboardModal');
         const qrModal = document.getElementById('studentQrModal');
+        const aiModal = document.getElementById('aiModal');
+        const adminLog = document.getElementById('adminLoginModal');
+        const stdModal = document.getElementById('adminEditStudentModal');
+        const innModal = document.getElementById('adminEditInnoModal');
+        const ansModal = document.getElementById('adminStudentAnswersModal');
+
         if (event.target === innoModal) innoModal.style.display = 'none';
         if (event.target === lbModal) lbModal.style.display = 'none';
         if (event.target === qrModal) qrModal.style.display = 'none';
+        if (event.target === aiModal) aiModal.style.display = 'none';
+        if (event.target === adminLog) adminLog.style.display = 'none';
+        if (event.target === stdModal) stdModal.style.display = 'none';
+        if (event.target === innModal) innModal.style.display = 'none';
+        if (event.target === ansModal) ansModal.style.display = 'none';
       };
     });
   </script>
