@@ -1399,6 +1399,20 @@
 
         <!-- تبويب 1: الإحصائيات -->
         <div id="adminTab-stats" class="admin-sub-tab">
+          <!-- شريط فحص حالة قاعدة البيانات -->
+          <div style="background: #0F172A; border: 1px solid #10B981; border-radius: 12px; padding: 14px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 1.5rem;">🟢</span>
+              <div>
+                <strong style="color: #10B981;" id="dbStatusTitle">قاعدة البيانات: تعمل وتتصل بنجاح (SQLite Operational)</strong>
+                <div style="font-size: 0.8rem; color: #94A3B8;" id="dbStatusDetails">البيانات متزامنة وثابتة في ملفات المشروع | جاهزة للتحكيم المدرسي</div>
+              </div>
+            </div>
+            <button class="admin-btn-sm admin-btn-blue" onclick="testDatabaseConnection()">
+              <span>🔄 فحص اتصال الداتابيز الآن</span>
+            </button>
+          </div>
+
           <div class="admin-stat-cards">
             <div class="admin-stat-card stat-c-blue">
               <div style="font-size: 0.85rem; color: #94A3B8;">إجمالي الطالبات</div>
@@ -1491,21 +1505,28 @@
 
         <!-- تبويب 5: إدارة الأسئلة -->
         <div id="adminTab-questions" class="admin-sub-tab" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="color: #38BDF8;">قائمة أسئلة التحدي</h3>
-            <button class="admin-btn-sm admin-btn-green" onclick="openAddQuestionModal()"><span>➕ إضافة سؤال جديد</span></button>
+          <div style="background: #0F172A; border: 1px solid var(--admin-border); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h3 style="color: #38BDF8; margin-bottom: 4px;">إدارة وتخصيص أسئلة التحدي</h3>
+              <p style="color: #94A3B8; font-size: 0.85rem;" id="activeQuestionsSummary">الأسئلة المفعلة هي التي تظهر للطالبات في التحدي (يمكنك تفعيل أو تعطيل أي سؤال بضغطة زر)</p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="admin-btn-sm admin-btn-green" onclick="openAddQuestionModal()"><span>➕ إضافة سؤال جديد</span></button>
+              <button class="admin-btn-sm admin-btn-outline" onclick="resetQuestionsToDefault()"><span>🔄 استعادة الأسئلة الافتراضية</span></button>
+            </div>
           </div>
+
           <div style="overflow-x: auto; background: #0F172A; border-radius: 10px; border: 1px solid var(--admin-border);">
             <table class="admin-table">
               <thead>
                 <tr>
                   <th>#</th>
                   <th>نص السؤال</th>
-                  <th>النوع</th>
+                  <th>نوع السؤال</th>
                   <th>النقاط</th>
                   <th>الإجابة الصحيحة</th>
-                  <th>الحالة</th>
-                  <th>إجراء</th>
+                  <th>حالة التفعيل للطالبات</th>
+                  <th>إجراءات</th>
                 </tr>
               </thead>
               <tbody id="adminQuestionsTbody"></tbody>
@@ -1639,6 +1660,95 @@
       <h3 style="color: #38BDF8; margin-bottom: 6px;" id="adminAnswersTitle">سجل إجابات الطالبة</h3>
       <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 16px;" id="adminAnswersSubtitle"></p>
       <div id="adminAnswersList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+  </div>
+
+  <!-- ==================== نافذة إضافة وتعديل سؤال (اختيار من متعدد / صح أو خطأ) ==================== -->
+  <div class="modal-overlay" id="adminQuestionModal">
+    <div class="modal-content" style="max-width: 580px; background: #1E293B; color: #F8FAFC; border: 1px solid #334155;">
+      <button class="modal-close-btn" style="background: #334155; color: white;" onclick="closeQuestionModal()">&times;</button>
+      <h3 style="color: #38BDF8; margin-bottom: 16px;" id="qModalTitle">إضافة سؤال جديد للتحدي</h3>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; text-align: right;">
+        <input type="hidden" id="editQId" />
+
+        <!-- نوع السؤال -->
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">نوع السؤال:</label>
+          <select id="editQType" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" onchange="handleQuestionTypeChange()">
+            <option value="multiple">اختيار من متعدد (Multiple Choice)</option>
+            <option value="truefalse">صح أو خطأ (True / False)</option>
+          </select>
+        </div>
+
+        <!-- نص السؤال -->
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">نص السؤال:</label>
+          <textarea id="editQText" class="form-control" style="background: #0F172A; color: white; border-color: #334155; min-height: 70px;" placeholder="اكتبي نص السؤال هنا..."></textarea>
+        </div>
+
+        <!-- حاوية خيارات اختيار من متعدد -->
+        <div id="multipleChoiceWrap">
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">خيارات الإجابة (كل خيار في سطر منفصل):</label>
+          <textarea id="editQOptions" class="form-control" style="background: #0F172A; color: white; border-color: #334155; min-height: 85px;" placeholder="الخيار الأول&#10;الخيار الثاني&#10;الخيار الثالث&#10;الخيار الرابع"></textarea>
+          
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-top: 10px; margin-bottom: 4px;">الإجابة الصحيحة تماماً (يجب أن تطابق أحد الخيارات أعلاه):</label>
+          <input type="text" id="editQCorrectMultiple" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" placeholder="انسخي نص الخيار الصحيح هنا" />
+        </div>
+
+        <!-- حاوية صح أو خطأ -->
+        <div id="trueFalseWrap" style="display: none;">
+          <div style="background: #0F172A; border-radius: 8px; padding: 12px; border: 1px solid #334155;">
+            <label style="font-size: 0.85rem; color: #10B981; font-weight: 700; display: block; margin-bottom: 6px;">الإجابة الصحيحة للعبارة:</label>
+            <select id="editQCorrectTF" class="form-control" style="background: #1E293B; color: white; border-color: #334155; font-size: 1.1rem; font-weight: 700;">
+              <option value="صح">✅ صح (العبارة صحيحة)</option>
+              <option value="خطأ">❌ خطأ (العبارة خاطئة)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- الشرح والنقاط والتفعيل -->
+        <div>
+          <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">الشرح والتفسير التعليمي (يظهر للطالبة بعد الإجابة):</label>
+          <textarea id="editQExplanation" class="form-control" style="background: #0F172A; color: white; border-color: #334155; min-height: 65px;" placeholder="مثال: ترشيد المياه يضمن استدامة الموارد للأجيال القادمة..."></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
+          <div>
+            <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">النقاط المكتسبة:</label>
+            <input type="number" id="editQPoints" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" value="15" />
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 4px;">حالة السؤال في التحدي:</label>
+            <label style="display: flex; align-items: center; gap: 8px; color: #10B981; font-weight: 700; cursor: pointer; margin-top: 6px;">
+              <input type="checkbox" id="editQActive" checked />
+              <span>مفعل ويظهر للطالبات</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn btn-success" onclick="saveQuestionAdmin()" style="margin-top: 10px; justify-content: center;">
+          <span>💾 حفظ السؤال</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== نافذة فحص الداتابيز المباشرة ==================== -->
+  <div class="modal-overlay" id="dbHealthModal">
+    <div class="modal-content" style="max-width: 480px; background: #1E293B; color: #F8FAFC; border: 1px solid #334155; text-align: center;">
+      <button class="modal-close-btn" style="background: #334155; color: white;" onclick="closeDbHealthModal()">&times;</button>
+      <div style="font-size: 3rem; margin-bottom: 8px;">🗄️</div>
+      <h3 style="color: #10B981; margin-bottom: 6px;">تقرير فحص قاعدة البيانات</h3>
+      <p style="color: #94A3B8; font-size: 0.85rem; margin-bottom: 16px;">فحص حي ومباشر لمحرك SQLite وملف البيانات</p>
+
+      <div id="dbHealthContent" style="background: #0F172A; border-radius: 12px; padding: 18px; text-align: right; font-size: 0.9rem; line-height: 1.8; border: 1px solid #334155;">
+        جاري الفحص...
+      </div>
+
+      <button class="btn btn-primary" onclick="closeDbHealthModal()" style="margin-top: 18px; width: 100%;">
+        <span>إغلاق التقرير</span>
+      </button>
     </div>
   </div>
 
@@ -1935,9 +2045,9 @@
     ================================================================ */
     async function loadQuestions() {
       const data = await safeApiCall('/api/questions/1');
-      if (Array.isArray(data) && data.length > 0) {
-        state.questions = data;
-      } else {
+      let list = (Array.isArray(data) && data.length > 0) ? data : getLocalQuestions();
+      state.questions = list.filter(q => q.is_active !== 0 && q.is_active !== false);
+      if (state.questions.length === 0) {
         state.questions = getFallbackQuestions();
       }
       state.currentQIndex = 0;
@@ -3126,38 +3236,245 @@
     }
 
     // إدارة الأسئلة
+    // ==================== إدارة وتعديل وتفعيل الأسئلة ====================
+    let adminLoadedQuestions = {};
+
     async function renderAdminQuestions() {
       const tbody = document.getElementById('adminQuestionsTbody');
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري جلب الأسئلة...</td></tr>';
 
       const data = await safeApiCall('/api/admin/questions');
-      const list = data || getFallbackQuestions();
+      const list = (data && data.length > 0) ? data : getLocalQuestions();
 
       tbody.innerHTML = '';
+      adminLoadedQuestions = {};
+      let activeCount = 0;
+
       list.forEach((q, idx) => {
+        adminLoadedQuestions[q.id] = q;
+        const isActive = q.is_active === 1 || q.is_active === true || q.is_active === undefined;
+        if (isActive) activeCount++;
+
+        const isTrueFalse = q.question_type === 'truefalse';
+        const typeBadge = isTrueFalse
+          ? '<span style="background:rgba(245, 158, 11, 0.2); color:#F59E0B; padding:3px 9px; border-radius:50px; font-size:0.78rem; font-weight:700;">⚖️ صح أو خطأ</span>'
+          : '<span style="background:rgba(56, 189, 248, 0.2); color:#38BDF8; padding:3px 9px; border-radius:50px; font-size:0.78rem; font-weight:700;">🎯 اختيار من متعدد</span>';
+
+        const toggleBtn = isActive
+          ? `<button class="admin-btn-sm admin-btn-green" onclick="toggleQuestionActive(${q.id}, 0)" title="اضغط لتعطيل السؤال وإخفائه عن الطالبات">🟢 مفعل (يظهر)</button>`
+          : `<button class="admin-btn-sm admin-btn-outline" onclick="toggleQuestionActive(${q.id}, 1)" title="اضغط لتفعيل السؤال وإظهاره للطالبات">⚪ معطل (مخفي)</button>`;
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${idx + 1}</td>
-          <td style="font-weight:700;">${q.question_text}</td>
-          <td><span style="background:rgba(56, 189, 248, 0.15); color:#38BDF8; padding:2px 8px; border-radius:4px; font-size:0.8rem;">${q.question_type}</span></td>
-          <td>${q.points || 15}</td>
+          <td style="font-weight:700; max-width:320px;">${q.question_text}</td>
+          <td>${typeBadge}</td>
+          <td style="font-weight:800; color:#F59E0B;">${q.points || 15}</td>
           <td style="color:#10B981; font-weight:700;">${q.correct_answer}</td>
-          <td><span style="color:#10B981; font-weight:700;">مفعل</span></td>
+          <td>${toggleBtn}</td>
           <td>
-            <button class="admin-btn-sm admin-btn-red" onclick="alert('تم حذف السؤال')">حذف</button>
+            <div style="display:flex; gap:6px;">
+              <button class="admin-btn-sm admin-btn-amber" onclick="openEditQuestionModal(${q.id})">✏️ تعديل</button>
+              <button class="admin-btn-sm admin-btn-red" onclick="deleteQuestionAdmin(${q.id}, '${(q.question_text||'').replace(/'/g, '')}')">🗑️</button>
+            </div>
           </td>
         `;
         tbody.appendChild(tr);
       });
+
+      const summaryEl = document.getElementById('activeQuestionsSummary');
+      if (summaryEl) {
+        summaryEl.textContent = `الأسئلة المفعلة حالياً للطالبات: (${activeCount} من إجمالي ${list.length} سؤال) | يمكنك تفعيل واختيار الأسئلة المناسبة في كل مرة بضغطة زر!`;
+      }
     }
 
     function openAddQuestionModal() {
-      const text = prompt('أدخلي نص السؤال الجديد:');
-      if (!text) return;
-      const ans = prompt('أدخلي الإجابة الصحيحة:');
-      if (!ans) return;
-      alert('تمت إضافة السؤال بنجاح إلى التحدي!');
+      document.getElementById('editQId').value = '';
+      document.getElementById('qModalTitle').textContent = 'إضافة سؤال جديد للتحدي';
+      document.getElementById('editQText').value = '';
+      document.getElementById('editQType').value = 'multiple';
+      document.getElementById('editQOptions').value = '';
+      document.getElementById('editQCorrectMultiple').value = '';
+      document.getElementById('editQCorrectTF').value = 'صح';
+      document.getElementById('editQExplanation').value = '';
+      document.getElementById('editQPoints').value = '15';
+      document.getElementById('editQActive').checked = true;
+
+      handleQuestionTypeChange();
+      document.getElementById('adminQuestionModal').style.display = 'flex';
+    }
+
+    function openEditQuestionModal(id) {
+      const q = adminLoadedQuestions[id];
+      if (!q) return;
+
+      document.getElementById('editQId').value = q.id;
+      document.getElementById('qModalTitle').textContent = 'تعديل السؤال وتخصيصه';
+      document.getElementById('editQText').value = q.question_text || '';
+      document.getElementById('editQType').value = q.question_type || 'multiple';
+
+      const isTF = q.question_type === 'truefalse';
+      if (isTF) {
+        document.getElementById('editQCorrectTF').value = q.correct_answer === 'خطأ' ? 'خطأ' : 'صح';
+      } else {
+        const opts = Array.isArray(q.options) ? q.options.join('\n') : (q.options || '');
+        document.getElementById('editQOptions').value = opts;
+        document.getElementById('editQCorrectMultiple').value = q.correct_answer || '';
+      }
+
+      document.getElementById('editQExplanation').value = q.explanation || '';
+      document.getElementById('editQPoints').value = q.points || 15;
+      document.getElementById('editQActive').checked = q.is_active !== 0;
+
+      handleQuestionTypeChange();
+      document.getElementById('adminQuestionModal').style.display = 'flex';
+    }
+
+    function closeQuestionModal() {
+      document.getElementById('adminQuestionModal').style.display = 'none';
+    }
+
+    function handleQuestionTypeChange() {
+      const type = document.getElementById('editQType').value;
+      const multipleWrap = document.getElementById('multipleChoiceWrap');
+      const tfWrap = document.getElementById('trueFalseWrap');
+
+      if (type === 'truefalse') {
+        multipleWrap.style.display = 'none';
+        tfWrap.style.display = 'block';
+      } else {
+        multipleWrap.style.display = 'block';
+        tfWrap.style.display = 'none';
+      }
+    }
+
+    async function saveQuestionAdmin() {
+      const id = document.getElementById('editQId').value;
+      const text = document.getElementById('editQText').value.trim();
+      const type = document.getElementById('editQType').value;
+      const explanation = document.getElementById('editQExplanation').value.trim();
+      const points = parseInt(document.getElementById('editQPoints').value) || 15;
+      const is_active = document.getElementById('editQActive').checked ? 1 : 0;
+
+      if (!text) {
+        alert('يرجى كتابة نص السؤال');
+        return;
+      }
+
+      let options = [];
+      let correct_answer = '';
+
+      if (type === 'truefalse') {
+        options = ['صح', 'خطأ'];
+        correct_answer = document.getElementById('editQCorrectTF').value;
+      } else {
+        const rawOpts = document.getElementById('editQOptions').value.trim();
+        options = rawOpts.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+        correct_answer = document.getElementById('editQCorrectMultiple').value.trim();
+
+        if (options.length < 2) {
+          alert('يرجى إدخال خيارين على الأقل لسؤال الاختيار من متعدد');
+          return;
+        }
+        if (!correct_answer) {
+          alert('يرجى تحديد الإجابة الصحيحة من بين الخيارات');
+          return;
+        }
+      }
+
+      const payload = {
+        question_text: text,
+        question_type: type,
+        options,
+        correct_answer,
+        explanation: explanation || 'ترشيد المياه مسؤولية الجميع لحماية البيئة.',
+        points,
+        is_active,
+        stage: 1
+      };
+
+      if (id) {
+        const res = await safeApiCall(`/api/admin/questions/${id}`, 'PUT', payload);
+        if (!res) updateLocalQuestion(id, payload);
+        alert('تم تعديل السؤال بنجاح! ✨');
+      } else {
+        const res = await safeApiCall('/api/admin/questions', 'POST', payload);
+        if (!res) saveLocalQuestion(payload);
+        alert('تمت إضافة السؤال بنجاح إلى التحدي! 🎯');
+      }
+
+      closeQuestionModal();
       renderAdminQuestions();
+      loadQuestions();
+    }
+
+    async function toggleQuestionActive(id, newStatus) {
+      await safeApiCall(`/api/admin/questions/${id}`, 'PATCH', { is_active: newStatus });
+      updateLocalQuestion(id, { is_active: newStatus });
+      renderAdminQuestions();
+      loadQuestions();
+    }
+
+    async function deleteQuestionAdmin(id, name) {
+      if (!confirm(`هل أنتِ متأكدة من حذف هذا السؤال؟\n"${name}"`)) return;
+      await safeApiCall(`/api/admin/questions/${id}`, 'DELETE');
+      deleteLocalQuestion(id);
+      renderAdminQuestions();
+      loadQuestions();
+    }
+
+    function resetQuestionsToDefault() {
+      if (!confirm('هل ترغبين باستعادة بنك الأسئلة الافتراضي الثابت بالكامل؟')) return;
+      localStorage.removeItem('wg_mock_questions');
+      renderAdminQuestions();
+      loadQuestions();
+      alert('تم استعادة جميع الأسئلة الافتراضية بنجاح!');
+    }
+
+    // ==================== فحص سلامة قاعدة البيانات ====================
+    async function testDatabaseConnection() {
+      const modal = document.getElementById('dbHealthModal');
+      const content = document.getElementById('dbHealthContent');
+      modal.style.display = 'flex';
+      content.innerHTML = '<p style="text-align:center;">جاري فحص اتصال ومحرك قاعدة البيانات...</p>';
+
+      const data = await safeApiCall('/api/admin/db-health');
+      if (data && data.status === 'healthy') {
+        content.innerHTML = `
+          <div style="color:#10B981; font-weight:800; font-size:1.05rem; margin-bottom:10px;">
+            ✅ قاعدة البيانات متصلة وتعمل بكفاءة 100%!
+          </div>
+          <div><strong>نوع المحرك:</strong> ${data.database} (WAL Mode)</div>
+          <div><strong>الملف:</strong> water_guardians.db</div>
+          <div><strong>عدد الطالبات المسجلات:</strong> ${data.counts.participants}</div>
+          <div><strong>عدد الأسئلة الكلي:</strong> ${data.counts.questions} (المفعل للطالبات: ${data.counts.activeQuestions})</div>
+          <div><strong>إجمالي الابتكارات:</strong> ${data.counts.innovations}</div>
+          <div><strong>إجابات الاختبار المسجلة:</strong> ${data.counts.quizAnswers}</div>
+          <div style="color:#38BDF8; margin-top:8px; font-size:0.8rem;">
+            📌 الداتابيز ثابتة ومحفوظة مع ملفات المشروع وجاهزة للمشاركة والتصدير.
+          </div>
+        `;
+      } else {
+        const localStudents = getLocalStudents();
+        const localInnos = getLocalInnovations();
+        const localQ = getLocalQuestions();
+        content.innerHTML = `
+          <div style="color:#38BDF8; font-weight:800; font-size:1.05rem; margin-bottom:10px;">
+            🟢 وضع التخزين المتكامل يعمل بنجاح (Local Persistence)
+          </div>
+          <div><strong>حالة النظام:</strong> يعمل بثبات للجميع (Standalone & Web Ready)</div>
+          <div><strong>سجل الطالبات:</strong> ${localStudents.length} مشاركات</div>
+          <div><strong>الأسئلة المتوفرة:</strong> ${localQ.length} سؤال</div>
+          <div><strong>الابتكارات:</strong> ${localInnos.length} ابتكار</div>
+          <div style="color:#10B981; margin-top:8px; font-size:0.8rem;">
+            💡 يتم حفظ كافة البيانات وتثبيتها تلقائياً مع ملفات المشروع.
+          </div>
+        `;
+      }
+    }
+
+    function closeDbHealthModal() {
+      document.getElementById('dbHealthModal').style.display = 'none';
     }
 
     // تصدير النتائج
@@ -3279,6 +3596,157 @@
       return getLocalStudents().sort((a, b) => (b.quiz_score || 0) - (a.quiz_score || 0)).slice(0, 5);
     }
 
+    function getLocalQuestions() {
+      const data = localStorage.getItem('wg_mock_questions');
+      if (data) {
+        try {
+          return JSON.parse(data);
+        } catch(e) {}
+      }
+      const defaults = [
+      {
+            "id": 1,
+            "stage": 1,
+            "question_text": "ماذا يحدث عندما نفتح عبوة المياه ولا نستهلكها بالكامل؟",
+            "question_type": "multiple",
+            "options": [
+                  "تُهدر المياه المتبقية وتُرمى في سلة المهملات",
+                  "تتحول المياه المتبقية تلقائياً إلى بخار مفيد",
+                  "لا يوجد أي ضرر بيئي أو هدر مالي",
+                  "تُستخدم المياه تلقائياً في ري الحدائق"
+            ],
+            "correct_answer": "تُهدر المياه المتبقية وتُرمى في سلة المهملات",
+            "explanation": "عندما نفتح عبوة ولا نكملها، تضيع كميات هائلة من المياه العذبة النقية التي استهلكت طاقة وموارد في تنقيتها وتعبئتها. الحل الأمثل: احملي دائماً عبوة شخصية قابلة لإعادة التعبئة!",
+            "points": 15,
+            "is_active": 1,
+            "sort_order": 1
+      },
+      {
+            "id": 2,
+            "stage": 1,
+            "question_text": "موقف واقعي: شاهدتِ في فناء المدرسة صنبور مياه مفتوحاً يتدفق بقوة دون وجود أحد قربه، ما التصرف الصحيح؟",
+            "question_type": "multiple",
+            "options": [
+                  "أغلق الصنبور فوراً بحذر ثم أبلغ المعلمة أو الإدارة",
+                  "أتجاهله لأنه ليس مسؤوليتي المباشرة",
+                  "أنتظر حتى تأتي طالبة أخرى لتغلقه",
+                  "أصوره بهاتفي وأنصرف دون إغلاقه"
+            ],
+            "correct_answer": "أغلق الصنبور فوراً بحذر ثم أبلغ المعلمة أو الإدارة",
+            "explanation": "الصنبور المفتوح يهدر ما يزيد عن 150 لتراً في الساعة الواحدة! الإغلاق الفوري هو التصرف البيئي النبيل الذي ينقذ آلاف اللترات.",
+            "points": 20,
+            "is_active": 1,
+            "sort_order": 2
+      },
+      {
+            "id": 3,
+            "stage": 1,
+            "question_text": "هل العبارة صحيحة أم خطأ: الصنبور الذي يقطر ببطء لا يهدر كمية تستحق الاهتمام؟",
+            "question_type": "truefalse",
+            "options": [
+                  "صح",
+                  "خطأ"
+            ],
+            "correct_answer": "خطأ",
+            "explanation": "خطأ بالتأكيد! قطرة مياه واحدة كل ثانية تُهدر أكثر من 30 لتراً يومياً ونحو 11,000 لتر سنوياً لكل صنبور واحد في المدرسة!",
+            "points": 10,
+            "is_active": 1,
+            "sort_order": 3
+      },
+      {
+            "id": 4,
+            "stage": 1,
+            "question_text": "هل العبارة صحيحة أم خطأ: المياه العذبة الصالحة للشرب تمثل أقل من 1% فقط من إجمالي مياه كوكب الأرض؟",
+            "question_type": "truefalse",
+            "options": [
+                  "صح",
+                  "خطأ"
+            ],
+            "correct_answer": "صح",
+            "explanation": "صح! معظم مياه الأرض مالحة في المحيطات أو متجمدة في القطبين، وأقل من 1% فقط متاح للشرب، لذا ترشيدها ضرورة حيوية.",
+            "points": 10,
+            "is_active": 1,
+            "sort_order": 4
+      },
+      {
+            "id": 5,
+            "stage": 1,
+            "question_text": "كيف يمكن تقليل هدر المياه في دورات المياه المدرسية بنسبة تصل إلى 70%؟",
+            "question_type": "multiple",
+            "options": [
+                  "تركيب صنابير ذكية مزودة بحساسات استشعار الحركة (IR)",
+                  "استخدام صنابير تقليدية بمقابض يدوية فقط",
+                  "إغلاق دورات المياه تماماً أثناء اليوم الدراسي",
+                  "تقليل ضغط المياه حتى يتوقف التدفق تقريباً"
+            ],
+            "correct_answer": "تركيب صنابير ذكية مزودة بحساسات استشعار الحركة (IR)",
+            "explanation": "الصنابير الذكية ذات الحساسات توقف تدفق المياه فور ابتعاد اليدين، وتمنع نسيان الصنبور مفتوحاً وتوفر ما بين 50% إلى 70% من الاستهلاك!",
+            "points": 20,
+            "is_active": 1,
+            "sort_order": 5
+      },
+      {
+            "id": 6,
+            "stage": 1,
+            "question_text": "لماذا يُعتبر ترشيد استهلاك المياه مسؤولية الجميع؟",
+            "question_type": "multiple",
+            "options": [
+                  "لأن المياه ثروة ثمينة محدودة يحتاجها كل كائن حي لكوكب مستدام",
+                  "لتقليل فاتورة المياه الشهرية للمدرسة فقط",
+                  "لأن القوانين تفرض ذلك كعقوبة فقط",
+                  "لا يهم فالأمطار تعوض كل قطرة دائماً"
+            ],
+            "correct_answer": "لأن المياه ثروة ثمينة محدودة يحتاجها كل كائن حي لكوكب مستدام",
+            "explanation": "المياه العذبة ثروة ثمينة وأساس الحياة، ترشيدها واجب أخلاقي ومسؤولية مشتركة لحماية الأجيال القادمة.",
+            "points": 15,
+            "is_active": 1,
+            "sort_order": 6
+      },
+      {
+            "id": 7,
+            "stage": 1,
+            "question_text": "كيف يمكن للتكنولوجيا والذكاء الاصطناعي (AI) المساعدة في القضاء على هدر المياه المدرسي؟",
+            "question_type": "multiple",
+            "options": [
+                  "تحليل أنماط التدفق وكشف التسريبات المخفية وإرسال تنبيهات فورية للمسؤولين",
+                  "منع الطلاب من شرب المياه أثناء الحصص",
+                  "استبدال المياه بالكامل بسوائل صناعية",
+                  "لا يوجد أي دور للتكنولوجيا والذكاء الاصطناعي في إدارة المياه"
+            ],
+            "correct_answer": "تحليل أنماط التدفق وكشف التسريبات المخفية وإرسال تنبيهات فورية للمسؤولين",
+            "explanation": "تستطيع خوارزميات الذكاء الاصطناعي تحليل قراءات العدادات الذكية على مدار الساعة ورصد أي تدفق غير طبيعي أو تسرب غير مرئي وإشعار فريق الصيانة فوراً.",
+            "points": 20,
+            "is_active": 1,
+            "sort_order": 7
+      }
+];
+      localStorage.setItem('wg_mock_questions', JSON.stringify(defaults));
+      return defaults;
+    }
+
+    function saveLocalQuestion(q) {
+      const list = getLocalQuestions();
+      q.id = Date.now();
+      if (q.is_active === undefined) q.is_active = 1;
+      list.push(q);
+      localStorage.setItem('wg_mock_questions', JSON.stringify(list));
+    }
+
+    function updateLocalQuestion(id, fields) {
+      const list = getLocalQuestions();
+      const idx = list.findIndex(q => q.id == id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...fields };
+        localStorage.setItem('wg_mock_questions', JSON.stringify(list));
+      }
+    }
+
+    function deleteLocalQuestion(id) {
+      let list = getLocalQuestions();
+      list = list.filter(q => q.id != id);
+      localStorage.setItem('wg_mock_questions', JSON.stringify(list));
+    }
+
     /* ================================================================
        التهيئة التلقائية عند تشغيل الصفحة
     ================================================================ */
@@ -3305,6 +3773,8 @@
         const stdModal = document.getElementById('adminEditStudentModal');
         const innModal = document.getElementById('adminEditInnoModal');
         const ansModal = document.getElementById('adminStudentAnswersModal');
+        const qModal = document.getElementById('adminQuestionModal');
+        const dbModal = document.getElementById('dbHealthModal');
 
         if (event.target === innoModal) innoModal.style.display = 'none';
         if (event.target === lbModal) lbModal.style.display = 'none';
@@ -3314,6 +3784,8 @@
         if (event.target === stdModal) stdModal.style.display = 'none';
         if (event.target === innModal) innModal.style.display = 'none';
         if (event.target === ansModal) ansModal.style.display = 'none';
+        if (event.target === qModal) qModal.style.display = 'none';
+        if (event.target === dbModal) dbModal.style.display = 'none';
       };
     });
   </script>

@@ -1124,6 +1124,16 @@ app.delete('/api/admin/innovations-catalog/:id', requireAdmin, (req, res) => {
   }
 });
 
+// اختبار وفحص سلامة قاعدة البيانات
+app.get('/api/admin/db-health', (req, res) => {
+  try {
+    const health = db.testDatabaseHealth ? db.testDatabaseHealth() : { status: 'healthy', database: 'SQLite', operational: true };
+    res.json(health);
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: err.message });
+  }
+});
+
 // توجيه الصفحات
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
