@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // سماح بالقراءة والكتابة للجميع خلال فترة المسابقة التعليمية
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
