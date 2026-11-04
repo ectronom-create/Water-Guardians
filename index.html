@@ -1444,6 +1444,11 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
 
+
+  <!-- مكتبة Supabase الرسمية للويب للاتصال المباشر اللحظي بالسحابة -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+
 </head>
 <body>
 
@@ -4103,6 +4108,19 @@
       list.unshift(p);
       localStorage.setItem('wg_mock_students', JSON.stringify(list));
 
+      // مزامنة فورية مع Supabase السحابية
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        window.WG_Supabase.saveParticipant({
+          participation_code: p.participation_code,
+          name: p.name,
+          school: p.school,
+          grade: p.grade,
+          quiz_score: p.quiz_score || 0,
+          stage_completed: p.stage_completed || 0,
+          badges: p.badges || []
+        }).catch(() => {});
+      }
+
       // مزامنة فورية مع Google Firebase
       if (window.WG_Firebase && window.WG_Firebase.initialized) {
         window.WG_Firebase.saveParticipant(p).catch(() => {});
@@ -4183,6 +4201,21 @@
       inno.id = Date.now();
       list.unshift(inno);
       localStorage.setItem('wg_mock_innovations', JSON.stringify(list));
+
+      // مزامنة فورية مع Supabase السحابية
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        window.WG_Supabase.saveInnovation({
+          type: inno.type || 'new',
+          innovation_name: inno.innovation_name,
+          problem_description: inno.problem_description,
+          innovation_idea: inno.innovation_idea,
+          how_it_works: inno.how_it_works,
+          technology_use: inno.technology_use,
+          water_saving_impact: inno.water_saving_impact,
+          expected_benefits: inno.expected_benefits,
+          is_featured: Boolean(inno.is_featured)
+        }).catch(() => {});
+      }
 
       // مزامنة فورية مع Google Firebase
       if (window.WG_Firebase && window.WG_Firebase.initialized) {
@@ -4442,6 +4475,10 @@
         alert('تم حفظ إعدادات Firebase بنجاح! جاري إعادة تهيئة الاتصال...');
         window.WG_Firebase.init(parsed).then(() => {
           checkFirebaseConnectionUI();
+    // تهيئة Supabase السحابي اللحظي
+    if (window.WG_Supabase) {
+      window.WG_Supabase.init();
+    }
         });
       } catch (err) {
         alert('خطأ في صيغة JSON: ' + err.message);
