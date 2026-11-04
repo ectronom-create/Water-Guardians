@@ -2650,8 +2650,34 @@
        المرحلة الأولى: اكتشفي المشكلة (الأسئلة التفاعلية)
     ================================================================ */
     async function loadQuestions() {
-      const data = await safeApiCall('/api/questions/1');
-      let list = (Array.isArray(data) && data.length > 0) ? data : getLocalQuestions();
+      let list = null;
+
+      // 1. الأولوية للاتصال المباشر اللحظي مع Supabase السحابي
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        try {
+          const spList = await window.WG_Supabase.getActiveQuestions(1);
+          if (Array.isArray(spList) && spList.length > 0) {
+            list = spList;
+            console.log('⚡ تم جلب أسئلة التحدي لايف من Supabase:', list.length);
+          }
+        } catch (e) {
+          console.warn('Supabase fetch failed, falling back:', e);
+        }
+      }
+
+      // 2. إذا لم يكن متوفراً، افحص API السيرفر
+      if (!list) {
+        const data = await safeApiCall('/api/questions/1');
+        if (Array.isArray(data) && data.length > 0) {
+          list = data;
+        }
+      }
+
+      // 3. التخزين الاحتياطي
+      if (!list || list.length === 0) {
+        list = getLocalQuestions();
+      }
+
       state.questions = list.filter(q => q.is_active !== 0 && q.is_active !== false);
       if (state.questions.length === 0) {
         state.questions = getFallbackQuestions();
@@ -3847,10 +3873,24 @@
 
     async function renderAdminQuestions() {
       const tbody = document.getElementById('adminQuestionsTbody');
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري جلب الأسئلة...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري جلب الأسئلة من الداتابيز...</td></tr>';
 
-      const data = await safeApiCall('/api/admin/questions');
-      const list = (data && data.length > 0) ? data : getLocalQuestions();
+      let list = null;
+
+      // أولوية القراءة لايف من Supabase
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        try {
+          const spAll = await window.WG_Supabase.getAllQuestions();
+          if (Array.isArray(spAll) && spAll.length > 0) {
+            list = spAll;
+          }
+        } catch (e) {}
+      }
+
+      if (!list) {
+        const data = await safeApiCall('/api/admin/questions');
+        list = (data && data.length > 0) ? data : getLocalQuestions();
+      }
 
       tbody.innerHTML = '';
       adminLoadedQuestions = {};
@@ -4044,21 +4084,38 @@
       modal.style.display = 'flex';
       content.innerHTML = '<p style="text-align:center;">جاري فحص اتصال ومحرك قاعدة البيانات...</p>';
 
+      let spHealth = null;
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        spHealth = await window.WG_Supabase.checkHealth();
+      }
+
+      if (spHealth && spHealth.status === 'healthy') {
+        content.innerHTML = `
+          <div style="color:#10B981; font-weight:800; font-size:1.15rem; margin-bottom:10px;">
+            ⚡ قاعدة بيانات Supabase الحية (Live Cloud) متصلة 100%!
+          </div>
+          <div><strong>المحرك:</strong> PostgreSQL السحابي (Supabase Realtime)</div>
+          <div><strong>المشروع:</strong> naomjwwihpcuwfjlkzgz.supabase.co</div>
+          <div><strong>عدد الأسئلة الحية:</strong> ${spHealth.counts.questions} سؤال</div>
+          <div><strong>عدد الطالبات المسجلات:</strong> ${spHealth.counts.participants} طالبة</div>
+          <div><strong>إجمالي الابتكارات الحية:</strong> ${spHealth.counts.innovations} ابتكار</div>
+          <div style="color:#38BDF8; margin-top:10px; font-size:0.85rem; font-weight:700;">
+            🌍 جميع التعديلات والمشاركات لايف ومشتركة مع أي شخص في العالم يفتح الرابط!
+          </div>
+        `;
+        return;
+      }
+
       const data = await safeApiCall('/api/admin/db-health');
       if (data && data.status === 'healthy') {
         content.innerHTML = `
           <div style="color:#10B981; font-weight:800; font-size:1.05rem; margin-bottom:10px;">
             ✅ قاعدة البيانات متصلة وتعمل بكفاءة 100%!
           </div>
-          <div><strong>نوع المحرك:</strong> ${data.database} (WAL Mode)</div>
-          <div><strong>الملف:</strong> water_guardians.db</div>
+          <div><strong>نوع المحرك:</strong> ${data.database}</div>
           <div><strong>عدد الطالبات المسجلات:</strong> ${data.counts.participants}</div>
-          <div><strong>عدد الأسئلة الكلي:</strong> ${data.counts.questions} (المفعل للطالبات: ${data.counts.activeQuestions})</div>
+          <div><strong>عدد الأسئلة الكلي:</strong> ${data.counts.questions}</div>
           <div><strong>إجمالي الابتكارات:</strong> ${data.counts.innovations}</div>
-          <div><strong>إجابات الاختبار المسجلة:</strong> ${data.counts.quizAnswers}</div>
-          <div style="color:#38BDF8; margin-top:8px; font-size:0.8rem;">
-            📌 الداتابيز ثابتة ومحفوظة مع ملفات المشروع وجاهزة للمشاركة والتصدير.
-          </div>
         `;
       } else {
         const localStudents = getLocalStudents();

@@ -1,7 +1,7 @@
 /**
  * supabase-client.js
- * عميل Supabase المباشر للواجهة الأمامية
- * يتيح الاتصال المباشر بقاعدة بيانات Supabase الحية بدون الحاجة لأي سيرفر وسيط!
+ * عميل Supabase السحابي المباشر للواجهة الأمامية
+ * يعمل كقاعدة بيانات لايف مشتركة لجميع المستخدمين في العالم
  */
 
 const SUPABASE_URL = 'https://naomjwwihpcuwfjlkzgz.supabase.co';
@@ -26,7 +26,88 @@ window.WG_Supabase = {
     return false;
   },
 
-  // تسجيل طالبة جديدة
+  // 1. جلب الأسئلة المفعلة للطالبات مباشرة من Supabase السحابي
+  async getActiveQuestions(stage = 1) {
+    if (!this.client) return null;
+    try {
+      const { data, error } = await this.client
+        .from('questions')
+        .select('*')
+        .eq('stage', stage)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true });
+      if (error) throw error;
+      return data;
+    } catch (e) {
+      console.error('Supabase getActiveQuestions error:', e);
+      return null;
+    }
+  },
+
+  // 2. جلب كل الأسئلة للوحة الإدارة
+  async getAllQuestions() {
+    if (!this.client) return null;
+    try {
+      const { data, error } = await this.client
+        .from('questions')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true });
+      if (error) throw error;
+      return data;
+    } catch (e) {
+      console.error('Supabase getAllQuestions error:', e);
+      return null;
+    }
+  },
+
+  // 3. إضافة وتعديل سؤال
+  async upsertQuestion(q) {
+    if (!this.client) return null;
+    try {
+      const { data, error } = await this.client
+        .from('questions')
+        .upsert(q)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (e) {
+      console.error('Supabase upsertQuestion error:', e);
+      return null;
+    }
+  },
+
+  // 4. تغيير تفعيل السؤال
+  async toggleQuestionActive(id, newStatus) {
+    if (!this.client) return false;
+    try {
+      const { error } = await this.client
+        .from('questions')
+        .update({ is_active: Boolean(newStatus) })
+        .eq('id', id);
+      return !error;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  // 5. حذف سؤال
+  async deleteQuestion(id) {
+    if (!this.client) return false;
+    try {
+      const { error } = await this.client
+        .from('questions')
+        .delete()
+        .eq('id', id);
+      return !error;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  // 6. تسجيل طالبة جديدة
   async saveParticipant(data) {
     if (!this.client) return null;
     try {
@@ -43,7 +124,7 @@ window.WG_Supabase = {
     }
   },
 
-  // استرجاع قائمة الطالبات
+  // 7. استرجاع قائمة الطالبات
   async getParticipants() {
     if (!this.client) return null;
     try {
@@ -58,7 +139,7 @@ window.WG_Supabase = {
     }
   },
 
-  // حفظ ابتكار جديد
+  // 8. حفظ ابتكار جديد
   async saveInnovation(data) {
     if (!this.client) return null;
     try {
@@ -75,7 +156,7 @@ window.WG_Supabase = {
     }
   },
 
-  // استرجاع الابتكارات
+  // 9. استرجاع الابتكارات
   async getInnovations() {
     if (!this.client) return null;
     try {
@@ -90,7 +171,23 @@ window.WG_Supabase = {
     }
   },
 
-  // تحديث ابتكار
+  // 10. جلب كتالوج الابتكارات
+  async getCatalog() {
+    if (!this.client) return null;
+    try {
+      const { data, error } = await this.client
+        .from('innovations_catalog')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+      if (error) throw error;
+      return data;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  // 11. تحديث ابتكار
   async updateInnovation(id, fields) {
     if (!this.client) return false;
     try {
@@ -104,7 +201,7 @@ window.WG_Supabase = {
     }
   },
 
-  // حذف ابتكار
+  // 12. حذف ابتكار
   async deleteInnovation(id) {
     if (!this.client) return false;
     try {
@@ -118,31 +215,33 @@ window.WG_Supabase = {
     }
   },
 
-  // تحديث طالبة
-  async updateParticipant(id, fields) {
-    if (!this.client) return false;
+  // 13. فحص صحة الداتابيز
+  async checkHealth() {
+    if (!this.client) return null;
     try {
-      const { error } = await this.client
+      const { count: qCount, error: qErr } = await this.client
+        .from('questions')
+        .select('*', { count: 'exact', head: true });
+      const { count: pCount } = await this.client
         .from('participants')
-        .update(fields)
-        .eq('id', id);
-      return !error;
+        .select('*', { count: 'exact', head: true });
+      const { count: iCount } = await this.client
+        .from('innovations')
+        .select('*', { count: 'exact', head: true });
+      
+      if (qErr) throw qErr;
+      return {
+        status: 'healthy',
+        database: 'Supabase Cloud (PostgreSQL Live)',
+        operational: true,
+        counts: {
+          questions: qCount,
+          participants: pCount,
+          innovations: iCount
+        }
+      };
     } catch (e) {
-      return false;
-    }
-  },
-
-  // حذف طالبة
-  async deleteParticipant(id) {
-    if (!this.client) return false;
-    try {
-      const { error } = await this.client
-        .from('participants')
-        .delete()
-        .eq('id', id);
-      return !error;
-    } catch (e) {
-      return false;
+      return { status: 'error', error: e.message };
     }
   }
 };
