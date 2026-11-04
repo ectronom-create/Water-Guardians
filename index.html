@@ -1036,7 +1036,408 @@
         text-align: center;
       }
     }
-  </style>
+  
+    /* ==================== تخصيصات مدرسة حفصة بنت عبدالرحمن والرؤية ==================== */
+    .header-school-thumb {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #0288D1;
+      background: white;
+      box-shadow: 0 2px 8px rgba(2, 136, 209, 0.25);
+    }
+
+    .school-official-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.9));
+      border: 2px solid #BAE6FD;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 25px;
+      box-shadow: 0 8px 24px rgba(2, 136, 209, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .school-official-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #D97706, #059669, #0288D1);
+    }
+
+    .school-logo-wrapper {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .school-main-logo {
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      border-radius: 50%;
+      background: #FFFFFF;
+      padding: 6px;
+      border: 3px solid #0288D1;
+      box-shadow: 0 6px 18px rgba(2, 136, 209, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .school-main-logo:hover {
+      transform: scale(1.05) rotate(-2deg);
+    }
+
+    .school-meta-info {
+      text-align: right;
+      flex: 1;
+    }
+
+    .oman-vision-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #EFF6FF;
+      color: #1E40AF;
+      border: 1px solid #BFDBFE;
+      padding: 5px 14px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .vision-tag {
+      background: #ECFDF5;
+      color: #047857;
+      padding: 2px 10px;
+      border-radius: 50px;
+      border: 1px solid #A7F3D0;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+
+    .school-name-heading {
+      font-size: 1.65rem;
+      font-weight: 900;
+      color: #0F172A;
+      margin: 4px 0 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .initiative-subheading {
+      color: #0369A1;
+      font-size: 0.98rem;
+      font-weight: 700;
+    }
+
+    /* صندوق التوعية بمشكلة الهدر */
+    .hero-awareness-box {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-right: 6px solid #0288D1;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin: 22px 0;
+      text-align: right;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    .awareness-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed #E2E8F0;
+    }
+
+    .awareness-icon {
+      font-size: 1.8rem;
+      background: #E0F2FE;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .awareness-title {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #0369A1;
+    }
+
+    .awareness-lead {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: #334155;
+      margin-bottom: 18px;
+    }
+
+    .awareness-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .awareness-mini-card {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.25s ease;
+    }
+
+    .awareness-mini-card:hover {
+      background: #F0F9FF;
+      border-color: #7DD3FC;
+      transform: translateY(-2px);
+    }
+
+    .mini-card-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .mini-card-text {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #1E293B;
+      line-height: 1.5;
+    }
+
+    .awareness-callout {
+      background: linear-gradient(135deg, #ECFDF5, #F0FDF4);
+      border: 1px solid #A7F3D0;
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      color: #065F46;
+      font-size: 1.02rem;
+      line-height: 1.8;
+      margin-top: 18px;
+    }
+
+    .callout-sparkle {
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    /* فكرة المسابقة وأهداف رؤية عمان 2040 */
+    .competition-concept-box {
+      background: linear-gradient(135deg, #FAF5FF, #F0FDF4);
+      border: 2px solid #D8B4FE;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin: 24px 0;
+      text-align: right;
+      box-shadow: 0 6px 20px rgba(147, 51, 234, 0.05);
+      position: relative;
+    }
+
+    .concept-header {
+      margin-bottom: 14px;
+    }
+
+    .concept-badge {
+      display: inline-block;
+      background: #7E22CE;
+      color: white;
+      padding: 4px 14px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .concept-title {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #581C87;
+      margin: 4px 0;
+    }
+
+    .concept-description, .concept-goals {
+      font-size: 1rem;
+      line-height: 1.85;
+      color: #374151;
+      margin-bottom: 14px;
+    }
+
+    .vision-tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px dashed #D8B4FE;
+    }
+
+    .vtag {
+      background: white;
+      color: #6B21A8;
+      border: 1px solid #E9D5FF;
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+
+    /* لوحة القيادة وفريق العمل */
+    .school-leadership-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-top: 30px;
+      text-align: right;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .leadership-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #F1F5F9;
+    }
+
+    .leadership-icon {
+      font-size: 2rem;
+      background: #FEF3C7;
+      color: #D97706;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      border: 1px solid #FDE68A;
+    }
+
+    .leadership-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #1E293B;
+      margin: 0;
+    }
+
+    .leadership-sub {
+      font-size: 0.88rem;
+      color: #64748B;
+      font-weight: 700;
+    }
+
+    .leadership-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 16px;
+    }
+
+    .member-card {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 18px 14px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .member-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+      background: #FFFFFF;
+    }
+
+    .member-card.lead-card {
+      border-color: #FCD34D;
+      background: linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 100%);
+    }
+
+    .member-card.developer-card {
+      border-color: #93C5FD;
+      background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%);
+    }
+
+    .member-avatar {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    .member-role {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #64748B;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .member-name {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: #0F172A;
+      margin-bottom: 8px;
+    }
+
+    .member-tag {
+      display: inline-block;
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 50px;
+      background: #E2E8F0;
+      color: #475569;
+    }
+
+    .lead-card .member-tag {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+
+    .developer-card .member-tag {
+      background: #DBEAFE;
+      color: #1E40AF;
+    }
+
+    @media (max-width: 768px) {
+      .school-official-banner {
+        flex-direction: column;
+        text-align: center;
+      }
+      .school-meta-info {
+        text-align: center;
+      }
+      .school-name-heading {
+        font-size: 1.35rem;
+      }
+      .awareness-header {
+        flex-direction: column;
+        text-align: center;
+      }
+      .awareness-callout {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+</style>
 </head>
 <body>
 
@@ -1046,10 +1447,10 @@
   <!-- الشريط العلوي العام -->
   <header class="app-header">
     <div class="header-brand" onclick="goHome()">
-      <div class="brand-icon">💧</div>
+      <img src="images/school_logo.jpg" onerror="this.src='school_logo.jpg'" alt="شعار المدرسة" class="header-school-thumb" />
       <div>
-        <div class="brand-title" id="appHeaderTitle">حُرّاس المياه</div>
-        <div class="brand-subtitle" id="appHeaderSubtitle">ابتكري الحل 🌱</div>
+        <div class="brand-title" id="appHeaderTitle">حُرّاس المياه 💧</div>
+        <div class="brand-subtitle" id="appHeaderSubtitle">مدرسة حفصة بنت عبدالرحمن (٩ - ١٢) 🇴🇲</div>
       </div>
     </div>
 
@@ -1121,46 +1522,160 @@
     <!-- ==================== الشاشة 1: الترحيب والبداية ==================== -->
     <div class="app-screen active" id="screen-welcome">
       <div class="glass-card hero-section">
+        
+        <!-- البانر الرسمي لمدرسة حفصة بنت عبدالرحمن ورؤية عمان 2040 -->
+        <div class="school-official-banner">
+          <div class="school-logo-wrapper">
+            <img src="images/school_logo.jpg" onerror="this.src='school_logo.jpg'" alt="شعار مدرسة حفصة بنت عبدالرحمن" class="school-main-logo" />
+          </div>
+          <div class="school-meta-info">
+            <div class="oman-vision-badge">
+              <span>🇴🇲</span>
+              <span>سلطنة عُمان | وزارة التربية والتعليم</span>
+              <span class="vision-tag">رؤية عُمان 2040 🌿</span>
+            </div>
+            <h2 class="school-name-heading">مدرسة حفصة بنت عبدالرحمن (٩ - ١٢)</h2>
+            <div class="initiative-subheading">المسابقة الوطنية للابتكار وريادة الأعمال الخضراء والذكاء الاصطناعي</div>
+          </div>
+        </div>
+
         <div class="hero-badge">🌟 منصة تعليمية تفاعلية لريادة الأعمال الخضراء والذكاء الاصطناعي</div>
         <h1 class="hero-title">حُرّاس المياه – ابتكري الحل 🌊</h1>
 
+        <!-- عداد لترات الهدر المدرسي -->
         <div class="hero-waste-counter">
           <span>💧 يُهدر في مدارسنا الآن تقريباً:</span>
           <span class="waste-number" id="wasteCounter">3,450</span>
           <span>لتر من الماء النقي!</span>
         </div>
 
-        <div class="hero-message-box">
-          <p><strong>مرحباً بكِ أيتها المبتكرة!</strong></p>
-          <p>هل تعلمين أن كميات كبيرة من المياه تُهدر يومياً في مدارسنا؟</p>
-          <p>بعض الطالبات يفتحن عبوات المياه ولا يكملنها، وبعضهن يتركن الصنابير مفتوحة، وأحياناً لا تُغلق الصنابير بشكل جيد، مما يؤدي إلى هدر كميات كبيرة من المياه.</p>
-          <p>الماء ثروة ثمينة، وكل قطرة تصنع فرقاً!</p>
-          <p>مهمتكِ اليوم هي اكتشاف المشكلة والتفكير في حلول مبتكرة تساعدنا على بناء مدرسة أكثر استدامة وذكاءً.</p>
-        </div>
+        <!-- صندوق التوعية بمشكلة الهدر وسلوكيات الاستهلاك -->
+        <div class="hero-awareness-box">
+          <div class="awareness-header">
+            <div class="awareness-icon">💧</div>
+            <div class="awareness-title">الماء مسؤوليتنا… فلا تكن سببًا في هدره! 💧</div>
+          </div>
+          <div class="awareness-body">
+            <p class="awareness-lead">
+              نلاحظ أحيانًا بعض السلوكيات التي تؤدي إلى هدر المياه في البيئة المدرسية، مثل <strong>فتح عبوات الماء وعدم استكمالها</strong>، و<strong>ترك الصنابير مفتوحة</strong>، أو <strong>عدم التأكد من إغلاقها بإحكام بعد الاستخدام</strong>.
+            </p>
 
-        <div class="student-info-form">
-          <h3 style="margin-bottom: 16px; color: var(--primary-dark);">📝 بياناتكِ أيتها البطلة (لإصدار شهادتكِ الرقمية):</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">اسمكِ الكريم:</label>
-              <input type="text" id="studentNameInput" class="form-control" placeholder="مثال: سارة الأحمد" />
+            <div class="awareness-cards-grid">
+              <div class="awareness-mini-card">
+                <div class="mini-card-icon">🚰</div>
+                <div class="mini-card-text">ترك الصنابير مفتوحة أو غير محكمة الإغلاق</div>
+              </div>
+              <div class="awareness-mini-card">
+                <div class="mini-card-icon">🧴</div>
+                <div class="mini-card-text">فتح عبوات المياه ورمي ما تبقى منها دون شرب</div>
+              </div>
+              <div class="awareness-mini-card">
+                <div class="mini-card-icon">⏳</div>
+                <div class="mini-card-text">إهمال تسربات الأنابيب وعدم الإبلاغ الفوري عنها</div>
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">مدرستكِ:</label>
-              <input type="text" id="studentSchoolInput" class="form-control" placeholder="اسم المدرسة" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">صفكِ الدراسي:</label>
-              <input type="text" id="studentGradeInput" class="form-control" placeholder="مثال: الصف التاسع" />
+
+            <div class="awareness-callout">
+              <span class="callout-sparkle">✨</span>
+              <div>
+                <strong>عزيزتي الطالبة،</strong> تذكّري دائمًا أن الماء نعمة عظيمة وثروة ثمينة، والمحافظة عليه مسؤولية تقع على عاتقنا جميعًا.<br>
+                <strong>كوني واعية في استهلاكك، واجعلي المحافظة على كل قطرة ماء سلوكًا يعكس وعيك ومسؤوليتك. 💧</strong>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="btn-group-center">
+        <!-- فكرة المسابقة وأهدافها المرتبطة برؤية عُمان 2040 -->
+        <div class="competition-concept-box">
+          <div class="concept-header">
+            <span class="concept-badge">💡 فكرة المسابقة وأهدافها الوطنية</span>
+            <h3 class="concept-title">ريادة الأعمال الخضراء والذكاء الاصطناعي لطلبة سلطنة عُمان</h3>
+          </div>
+
+          <p class="concept-description">
+            تقوم فكرة المسابقة على <strong>تشجيع طلبة الصفوف (5–12) في مختلف محافظات سلطنة عُمان</strong> على الابتكار وريادة الأعمال، من خلال تقديم أفكار ومشروعات إبداعية، خاصة في مجالات <strong>الذكاء الاصطناعي، والطاقة المتجددة، والاقتصاد الأخضر</strong>.
+          </p>
+
+          <p class="concept-goals">
+            🎯 <strong>أهداف المسابقة:</strong> اكتشاف المواهب الطلابية وتنمية مهارات التفكير الريادي والقيادة والعمل الحر، وتحويل الأفكار الواعدة إلى مشروعات استثمارية قابلة للنمو، عبر تنظيم الفعاليات والمعارض وورش العمل والمسابقات، وتعزيز الشراكة بين المدارس والمؤسسات الحكومية والخاصة؛ <strong>بما يواكب توجهات رؤية عُمان 2040</strong>.
+          </p>
+
+          <div class="vision-tags-row">
+            <span class="vtag">🤖 الذكاء الاصطناعي</span>
+            <span class="vtag">☀️ الطاقة المتجددة</span>
+            <span class="vtag">🌱 الاقتصاد الأخضر</span>
+            <span class="vtag">📈 التفكير الريادي والاستثماري</span>
+            <span class="vtag">🇴🇲 رؤية عُمان 2040</span>
+            <span class="vtag">🏫 طلبة الصفوف (5–12)</span>
+          </div>
+        </div>
+
+        <!-- نموذج تسجيل بيانات الطالبة -->
+        <div class="student-info-form">
+          <h3 style="margin-bottom: 16px; color: var(--primary-dark);">📝 بياناتكِ أيتها المبتكرة (لإصدار شهادتكِ وبطاقة مشاركتكِ):</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">اسمكِ الكريم:</label>
+              <input type="text" id="studentNameInput" class="form-control" placeholder="مثال: مريم بنت أحمد البوسعيدية" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">مدرستكِ:</label>
+              <input type="text" id="studentSchoolInput" class="form-control" placeholder="مدرسة حفصة بنت عبدالرحمن (أو اسم مدرستكِ)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">صفكِ الدراسي:</label>
+              <input type="text" id="studentGradeInput" class="form-control" placeholder="مثال: الصف العاشر (صفوف 5-12)" />
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group-center" style="margin-top: 24px;">
           <button class="btn btn-primary" onclick="startChallenge()">
-            <span>🚀 ابدئي التحدي</span>
+            <span>🚀 ابدئي التحدي والابتكار</span>
           </button>
         </div>
+
+        <!-- لوحة شرف القيادة المدرسية وفريق العمل والإشراف -->
+        <div class="school-leadership-card">
+          <div class="leadership-title-wrap">
+            <span class="leadership-icon">👑</span>
+            <div>
+              <h3 class="leadership-title">فريق العمل والإشراف المدرسي</h3>
+              <div class="leadership-sub">مدرسة حفصة بنت عبدالرحمن (٩ - ١٢) | سلطنة عُمان</div>
+            </div>
+          </div>
+
+          <div class="leadership-grid">
+            <div class="member-card lead-card">
+              <div class="member-avatar">👑</div>
+              <div class="member-role">مديرة المدرسة</div>
+              <div class="member-name">أ. أسماء السعدي</div>
+              <div class="member-tag">قيادة وإشراف عام</div>
+            </div>
+
+            <div class="member-card">
+              <div class="member-avatar">🌟</div>
+              <div class="member-role">مساعدة المديرة</div>
+              <div class="member-name">أ. طرفة القليعي</div>
+              <div class="member-tag">متابعة وإشراف إداري</div>
+            </div>
+
+            <div class="member-card">
+              <div class="member-avatar">💼</div>
+              <div class="member-role">أخصائية التوجيه المهني</div>
+              <div class="member-name">أ. زهرة الجهوري</div>
+              <div class="member-tag">توجيه ريادي وتنمية المهارات</div>
+            </div>
+
+            <div class="member-card developer-card">
+              <div class="member-avatar">💡</div>
+              <div class="member-role">إعداد وتطوير المبادرة</div>
+              <div class="member-name">آلاء سعيد الجهوري</div>
+              <div class="member-tag">فكرة وتصميم وإعداد</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1351,23 +1866,58 @@
           </div>
         </div>
 
-        <!-- شهادة الإنجاز الرقمية -->
+        <!-- شهادة الإنجاز الرقمية المعتمدة -->
         <div class="certificate-card" id="certificateBox">
-          <div style="font-size: 3rem; margin-bottom: 5px;">💧</div>
-          <div class="cert-title">شهادة حارسة المياه المبتكرة</div>
-          <p style="font-size: 1rem; color: #546E7A;">تَشهد مبادرة حُرّاس المياه بأن المبتكرة الخضراء:</p>
-          <div class="cert-student-name" id="certStudentName">سارة الأحمد</div>
-          <p style="font-size: 1.05rem; color: #37474F; line-height: 1.7;">
-            قد أتمت بنجاح تحدي استكشاف هدر المياه، وابتكرت حلاً تقنياً مستداماً يعزز ريادة الأعمال الخضراء والذكاء الاصطناعي في بيئتها المدرسية.
+          <!-- الترويسة الرسمية للشهادة -->
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #BAE6FD; padding-bottom: 12px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <div style="text-align: right;">
+              <div style="font-size: 0.85rem; font-weight: 800; color: #0288D1;">سلطنة عُمان | وزارة التربية والتعليم</div>
+              <div style="font-size: 1.1rem; font-weight: 900; color: #0F172A;">مدرسة حفصة بنت عبدالرحمن (٩ - ١٢)</div>
+            </div>
+            <img src="images/school_logo.jpg" onerror="this.src='school_logo.jpg'" alt="شعار المدرسة" style="width: 65px; height: 65px; object-fit: contain; border-radius: 50%; border: 2px solid #0288D1; background: white; padding: 3px;" />
+            <div style="text-align: left;">
+              <div style="font-size: 0.85rem; font-weight: 800; color: #059669;">رؤية عُمان 2040 🌿</div>
+              <div style="font-size: 0.8rem; color: #64748B; font-weight: 700;">ريادة الأعمال الخضراء والذكاء الاصطناعي</div>
+            </div>
+          </div>
+
+          <div class="cert-title">شهادة حارسة المياه والمبتكرة الخضراء 🏆</div>
+          <p style="font-size: 1.05rem; color: #546E7A; margin-top: 6px;">تَشهد إدارة مدرسة حفصة بنت عبدالرحمن ومبادرة حُرّاس المياه بأن المبتكرة:</p>
+          <div class="cert-student-name" id="certStudentName">مريم بنت أحمد</div>
+          <p style="font-size: 1.05rem; color: #37474F; line-height: 1.8; max-width: 680px; margin: 10px auto;">
+            قد أتمت بنجاح مراحل التحدي التفاعلي لترشيد المياه، وقدّمت ابتكاراً ريادياً مستداماً يسهم في حماية الموارد المائية وتوظيف تقنيات الذكاء الاصطناعي بما يواكب تطلعات رؤية عُمان 2040.
           </p>
+
           <div class="badges-earned-row">
             <div class="badge-item">🛡️ حارسة المياه</div>
             <div class="badge-item">🤖 المفكرة الذكية</div>
             <div class="badge-item">🌱 المبتكرة الخضراء</div>
+            <div class="badge-item">🇴🇲 رائدة أعمال المستقبل</div>
           </div>
-          <div style="margin-top: 20px; font-size: 0.9rem; color: #78909C; display: flex; justify-content: space-between;">
+
+          <!-- توقيعات واعتمادات الإدارة وفريق العمل -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px dashed #CBD5E1; text-align: center;">
+            <div style="background: rgba(248, 250, 252, 0.8); padding: 8px; border-radius: 8px; border: 1px solid #E2E8F0;">
+              <div style="font-size: 0.75rem; color: #64748B; font-weight: 800;">إعداد وتطوير المبادرة</div>
+              <div style="font-weight: 900; color: #1E293B; margin-top: 3px; font-size: 0.88rem;">آلاء سعيد الجهوري</div>
+            </div>
+            <div style="background: rgba(248, 250, 252, 0.8); padding: 8px; border-radius: 8px; border: 1px solid #E2E8F0;">
+              <div style="font-size: 0.75rem; color: #64748B; font-weight: 800;">أخصائية التوجيه المهني</div>
+              <div style="font-weight: 900; color: #1E293B; margin-top: 3px; font-size: 0.88rem;">أ. زهرة الجهوري</div>
+            </div>
+            <div style="background: rgba(248, 250, 252, 0.8); padding: 8px; border-radius: 8px; border: 1px solid #E2E8F0;">
+              <div style="font-size: 0.75rem; color: #64748B; font-weight: 800;">مساعدة المديرة</div>
+              <div style="font-weight: 900; color: #1E293B; margin-top: 3px; font-size: 0.88rem;">أ. طرفة القليعي</div>
+            </div>
+            <div style="background: rgba(254, 243, 199, 0.8); padding: 8px; border-radius: 8px; border: 1px solid #FCD34D;">
+              <div style="font-size: 0.75rem; color: #92400E; font-weight: 800;">مديرة المدرسة</div>
+              <div style="font-weight: 900; color: #78350F; margin-top: 3px; font-size: 0.88rem;">أ. أسماء السعدي</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 18px; font-size: 0.85rem; color: #64748B; display: flex; justify-content: space-between; border-top: 1px solid #F1F5F9; padding-top: 10px;">
             <span id="certDateText">التاريخ: اليوم</span>
-            <span>رقم الاعتماد: <strong id="certCodeText">WG-XXXXXX</strong></span>
+            <span>رقم الاعتماد: <strong id="certCodeText" style="color: #0288D1;">WG-XXXXXX</strong></span>
           </div>
         </div>
 
@@ -1981,7 +2531,7 @@
     ================================================================ */
     async function startChallenge() {
       const name = document.getElementById('studentNameInput').value.trim() || 'مبتكرة حُرّاس المياه';
-      const school = document.getElementById('studentSchoolInput').value.trim() || 'مدرستي الخضراء';
+      const school = document.getElementById('studentSchoolInput').value.trim() || 'مدرسة حفصة بنت عبدالرحمن (9-12)';
       const grade = document.getElementById('studentGradeInput').value.trim() || 'المرحلة الدراسية';
 
       state.name = name;
