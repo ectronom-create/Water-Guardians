@@ -1439,10 +1439,7 @@
 
 </style>
 
-  <!-- مكتبات Google Firebase الرسمية للويب (v9 Compat) للربط المباشر اللحظي -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
+  
 
 
   <!-- مكتبة Supabase الرسمية للويب للاتصال المباشر اللحظي بالسحابة -->
@@ -1952,8 +1949,7 @@
             <button class="admin-tab-btn" onclick="switchAdminTab('qrcode', this)"><span>📲 باركود المشاركة (QR)</span></button>
             <button class="admin-tab-btn" onclick="switchAdminTab('questions', this)"><span>❓ إدارة الأسئلة</span></button>
             <button class="admin-tab-btn" onclick="switchAdminTab('export', this)"><span>📤 تصدير Excel</span></button>
-            <button class="admin-tab-btn" onclick="switchAdminTab('firebase', this)"><span>🔥 Google Firebase</span></button>
-          </div>
+            </div>
           <div>
             <button class="admin-btn-sm admin-btn-red" onclick="adminLogout()"><span>🚪 خروج المشرف</span></button>
           </div>
@@ -2107,52 +2103,7 @@
             <span>📥 تنزيل ملف Excel / CSV الآن</span>
           </button>
         </div>
-
-        <!-- تبويب 7: إعداد وربط Google Firebase -->
-        <div id="adminTab-firebase" class="admin-sub-tab" style="display: none;">
-          <div style="background: #1E293B; border: 2px solid #F59E0B; border-radius: var(--radius-md); padding: 24px; margin-bottom: 20px; color: #F8FAFC;">
-            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px; border-bottom: 1px solid #334155; padding-bottom: 14px;">
-              <span style="font-size: 2.4rem;">🔥</span>
-              <div>
-                <h3 style="font-size: 1.35rem; color: #FBBF24; margin: 0;">الربط السحابي المباشر مع Google Firebase</h3>
-                <div style="font-size: 0.88rem; color: #94A3B8;">مزامنة بيانات الطالبات والابتكارات لحظياً وبشكل موحد لكل من يفتح الرابط العام في أي مكان بالعالم</div>
-              </div>
-            </div>
-
-            <div id="firebaseLiveStatus" style="background: rgba(245, 158, 11, 0.15); border: 1px solid #F59E0B; border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; font-weight: 700; color: #FCD34D; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-              <div id="firebaseStatusText">⏳ جاري فحص اتصال Google Firebase...</div>
-              <button class="admin-btn-sm admin-btn-amber" onclick="checkFirebaseConnectionUI()">🔄 فحص وتحديث الاتصال</button>
-            </div>
-
-            <div style="background: #0F172A; border: 1px solid #334155; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
-              <h4 style="color: #38BDF8; margin-bottom: 10px; font-size: 1.05rem;">🔑 إعدادات مشروع Firebase الخاص بك (firebaseConfig):</h4>
-              <p style="font-size: 0.88rem; color: #94A3B8; line-height: 1.7; margin-bottom: 12px;">
-                يمكنك لصق كود الإعدادات الخاص بمشروعك من لوحة تحكم Google Firebase (Project Settings → Web Apps → Config) لربط قاعدة بياناتك السحابية المباشرة:
-              </p>
-              <textarea id="firebaseConfigInput" style="width: 100%; height: 130px; font-family: monospace; font-size: 0.85rem; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #1E293B; color: #E2E8F0; direction: ltr; text-align: left;" placeholder='{
-  "apiKey": "AIzaSy...",
-  "authDomain": "your-app.firebaseapp.com",
-  "projectId": "your-project-id",
-  "storageBucket": "your-app.appspot.com",
-  "messagingSenderId": "...",
-  "appId": "..."
-}'></textarea>
-              <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
-                <button class="admin-btn-sm admin-btn-green" onclick="saveCustomFirebaseConfig()">💾 حفظ وتفعيل إعدادات Firebase</button>
-                <button class="admin-btn-sm admin-btn-outline" onclick="resetFirebaseConfigDefault()">🔄 استعادة الإعدادات الافتراضية</button>
-              </div>
-            </div>
-
-            <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 16px; font-size: 0.92rem; color: #7DD3FC; line-height: 1.8;">
-              <strong>💡 خطوات تفعيل Google Firebase مجاناً وبأعلى أداء:</strong><br>
-              1. ادخل إلى <a href="https://console.firebase.google.com" target="_blank" style="color:#FBBF24; font-weight:bold; text-decoration:underline;">Google Firebase Console</a> وسجل دخولك بحساب جوجل.<br>
-              2. انقر <strong>Add project</strong> باسم <strong>Water-Guardians</strong> ثم اختر <strong>Firestore Database</strong> وانقر <strong>Create database</strong> (اختر Test mode).<br>
-              3. أضف تطبيق ويب (Web App) وانسخ كائن <code>firebaseConfig</code> والصقه هنا في الحقل أعلاه واضغط حفظ. سيتم ربط كل الطالبات في العالم بنفس القاعدة فوراً!
-            </div>
-          </div>
         </div>
-
-      </div>
     </div>
 
   </main>
@@ -2594,19 +2545,37 @@
       state.school = school;
       state.grade = grade;
 
-      const data = await safeApiCall('/api/participant/start', 'POST', { name, school, grade });
-      if (data && data.success) {
-        state.participantId = data.participantId;
-        state.participationCode = data.participationCode;
-      } else {
-        state.participantId = Date.now();
-        state.participationCode = 'WG-' + Math.random().toString(36).substr(2, 8).toUpperCase();
-        // حفظ محلي في حال العمل المستقل
-        saveLocalParticipant({
-          id: state.participantId,
-          participation_code: state.participationCode,
-          name, school, grade, quiz_score: 0, stage_completed: 1, created_at: new Date().toISOString()
-        });
+      const code = 'WG-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+      state.participationCode = code;
+
+      // أولوية الحفظ اللحظي في Supabase
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        try {
+          const spRes = await window.WG_Supabase.saveParticipant({
+            participation_code: code,
+            name,
+            school,
+            grade,
+            quiz_score: 0,
+            stage_completed: 1,
+            badges: []
+          });
+          if (spRes && spRes.id) {
+            state.participantId = spRes.id;
+          }
+        } catch(e) {
+          console.warn('Supabase save failed:', e);
+        }
+      }
+
+      if (!state.participantId) {
+        const data = await safeApiCall('/api/participant/start', 'POST', { name, school, grade });
+        if (data && data.success) {
+          state.participantId = data.participantId;
+          state.participationCode = data.participationCode;
+        } else {
+          state.participantId = Date.now();
+        }
       }
 
       localStorage.setItem('wg_participant_code', state.participationCode);
@@ -2892,7 +2861,13 @@
       const grid = document.getElementById('innovationsCatalogGrid');
       grid.innerHTML = '<div style="text-align: center; grid-column: 1/-1;">جاري تحميل الابتكارات المقترحة...</div>';
 
-      const list = await safeApiCall('/api/innovations-catalog');
+      let list = null;
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        list = await window.WG_Supabase.getCatalog();
+      }
+      if (!list || !list.length) {
+        list = await safeApiCall('/api/innovations-catalog');
+      }
       if (Array.isArray(list) && list.length > 0) {
         state.innovationsCatalog = list;
       } else {
@@ -3253,14 +3228,38 @@
         innoObj.image_path = dataUrl;
       }
 
-      const data = await safeApiCall('/api/innovation/submit', 'POST', formData);
-      if (data && data.success) {
-        displayFinalSuccess(data.participationCode);
-      } else {
-        const fallbackCode = state.participationCode || ('WG-' + Math.random().toString(36).substr(2, 8).toUpperCase());
-        saveLocalInnovation(innoObj);
-        displayFinalSuccess(fallbackCode);
+      let submitted = false;
+      const code = state.participationCode || ('WG-' + Math.random().toString(36).substr(2, 8).toUpperCase());
+
+      // 1. الحفظ السحابي المباشر في Supabase
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        try {
+          const spRes = await window.WG_Supabase.saveInnovation({
+            participant_id: state.participantId || null,
+            type: innoObj.type || 'new',
+            innovation_name: innoObj.innovation_name,
+            problem_description: innoObj.problem_description,
+            innovation_idea: innoObj.innovation_idea,
+            how_it_works: innoObj.how_it_works,
+            technology_use: innoObj.technology_use,
+            water_saving_impact: innoObj.water_saving_impact,
+            expected_benefits: innoObj.expected_benefits,
+            image_path: innoObj.image_path || null,
+            is_featured: false
+          });
+          if (spRes && spRes.id) submitted = true;
+        } catch(e) {
+          console.warn('Supabase inno submit error:', e);
+        }
       }
+
+      if (!submitted) {
+        const data = await safeApiCall('/api/innovation/submit', 'POST', formData);
+        if (data && data.success) submitted = true;
+      }
+
+      saveLocalInnovation(innoObj);
+      displayFinalSuccess(code);
     }
 
     function displayFinalSuccess(code) {
@@ -3292,9 +3291,15 @@
       modal.style.display = 'flex';
       content.innerHTML = '<p style="text-align:center; padding:20px;">جاري جلب قائمة المبتكرات المتميزات...</p>';
 
-      const data = await safeApiCall('/api/leaderboard');
-      let html = '';
+      let data = null;
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        data = await window.WG_Supabase.getLeaderboard();
+      }
+      if (!data) {
+        data = await safeApiCall('/api/leaderboard');
+      }
 
+      let html = '';
       const featuredList = (data && data.featuredInnovations && data.featuredInnovations.length > 0)
         ? data.featuredInnovations
         : getLocalFeaturedInnovations();
@@ -3456,8 +3461,13 @@
     let adminTypesChartInstance = null;
 
     async function loadAdminStats() {
-      const data = await safeApiCall('/api/admin/stats');
-      let stats = data;
+      let stats = null;
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        stats = await window.WG_Supabase.getStats();
+      }
+      if (!stats) {
+        stats = await safeApiCall('/api/admin/stats');
+      }
 
       if (!stats) {
         // بيانات محلية احتياطية
@@ -3551,8 +3561,14 @@
       const tbody = document.getElementById('adminStudentsTbody');
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">جاري جلب القائمة...</td></tr>';
 
-      const data = await safeApiCall(`/api/admin/participants?search=${encodeURIComponent(search)}&school=${encodeURIComponent(school)}`);
-      let list = data && data.participants ? data.participants : getLocalStudents();
+      let list = null;
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        list = await window.WG_Supabase.getParticipants(search, school);
+      }
+      if (!list) {
+        const data = await safeApiCall(`/api/admin/participants?search=${encodeURIComponent(search)}&school=${encodeURIComponent(school)}`);
+        list = data && data.participants ? data.participants : getLocalStudents();
+      }
 
       list = list.filter(p => {
         const matchesSearch = !search || (p.name && p.name.toLowerCase().includes(search)) || (p.participation_code && p.participation_code.toLowerCase().includes(search));
@@ -3624,9 +3640,12 @@
 
     async function deleteStudentAdmin(id, name) {
       if (!confirm(`هل أنتِ متأكدة من حذف مشاركة الطالبة (${name}) بالكامل؟`)) return;
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        await window.WG_Supabase.deleteParticipant(id);
+      }
       await safeApiCall(`/api/admin/participant/${id}`, 'DELETE');
       deleteLocalStudent(id);
-      alert('تم حذف المشاركة بنجاح');
+      alert('تم حذف المشاركة بنجاح من قاعدة البيانات الحية');
       renderAdminParticipants();
       loadAdminStats();
     }
@@ -3677,8 +3696,14 @@
       const grid = document.getElementById('adminInnoGrid');
       grid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">جاري جلب الابتكارات...</div>';
 
-      const data = await safeApiCall(`/api/admin/innovations?search=${encodeURIComponent(search)}&type=${encodeURIComponent(type)}`);
-      let list = data && data.innovations ? data.innovations : getLocalInnovations();
+      let list = null;
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        list = await window.WG_Supabase.getInnovations(search, type);
+      }
+      if (!list) {
+        const data = await safeApiCall(`/api/admin/innovations?search=${encodeURIComponent(search)}&type=${encodeURIComponent(type)}`);
+        list = data && data.innovations ? data.innovations : getLocalInnovations();
+      }
 
       list = list.filter(i => {
         const matchesSearch = !search || (i.innovation_name && i.innovation_name.toLowerCase().includes(search)) || (i.problem_description && i.problem_description.toLowerCase().includes(search));
@@ -3791,9 +3816,12 @@
 
     async function deleteInnoAdmin(id, name) {
       if (!confirm(`هل أنتِ متأكدة من حذف الابتكار (${name})؟`)) return;
+      if (window.WG_Supabase && window.WG_Supabase.isLive) {
+        await window.WG_Supabase.deleteInnovation(id);
+      }
       await safeApiCall(`/api/admin/innovation/${id}`, 'DELETE');
       deleteLocalInnovation(id);
-      alert('تم حذف الابتكار بنجاح');
+      alert('تم حذف الابتكار بنجاح من قاعدة البيانات الحية');
       renderAdminInnovations();
       loadAdminStats();
     }
@@ -4177,11 +4205,6 @@
           badges: p.badges || []
         }).catch(() => {});
       }
-
-      // مزامنة فورية مع Google Firebase
-      if (window.WG_Firebase && window.WG_Firebase.initialized) {
-        window.WG_Firebase.saveParticipant(p).catch(() => {});
-      }
     }
 
     function updateLocalStudent(id, fields) {
@@ -4190,9 +4213,6 @@
       if (idx !== -1) {
         list[idx] = { ...list[idx], ...fields };
         localStorage.setItem('wg_mock_students', JSON.stringify(list));
-      }
-      if (window.WG_Firebase && window.WG_Firebase.initialized) {
-        window.WG_Firebase.updateParticipant(String(id), fields).catch(() => {});
       }
     }
 
@@ -4209,9 +4229,6 @@
       let list = getLocalStudents();
       list = list.filter(s => s.id != id);
       localStorage.setItem('wg_mock_students', JSON.stringify(list));
-      if (window.WG_Firebase && window.WG_Firebase.initialized) {
-        window.WG_Firebase.deleteParticipant(String(id)).catch(() => {});
-      }
     }
 
     function getLocalInnovations() {
@@ -4273,11 +4290,6 @@
           is_featured: Boolean(inno.is_featured)
         }).catch(() => {});
       }
-
-      // مزامنة فورية مع Google Firebase
-      if (window.WG_Firebase && window.WG_Firebase.initialized) {
-        window.WG_Firebase.saveInnovation(inno).catch(() => {});
-      }
     }
 
     function updateLocalInnovation(id, fields) {
@@ -4287,18 +4299,12 @@
         list[idx] = { ...list[idx], ...fields };
         localStorage.setItem('wg_mock_innovations', JSON.stringify(list));
       }
-      if (window.WG_Firebase && window.WG_Firebase.initialized) {
-        window.WG_Firebase.updateInnovation(String(id), fields).catch(() => {});
-      }
     }
 
     function deleteLocalInnovation(id) {
       let list = getLocalInnovations();
       list = list.filter(i => i.id != id);
       localStorage.setItem('wg_mock_innovations', JSON.stringify(list));
-      if (window.WG_Firebase && window.WG_Firebase.initialized) {
-        window.WG_Firebase.deleteInnovation(String(id)).catch(() => {});
-      }
     }
 
     function getLocalFeaturedInnovations() {
@@ -4500,57 +4506,11 @@
         if (event.target === qModal) qModal.style.display = 'none';
         if (event.target === dbModal) dbModal.style.display = 'none';
       };
-    
-    // وظائف دعم Google Firebase السحابي
-    async function checkFirebaseConnectionUI() {
-      const statusText = document.getElementById('firebaseStatusText');
-      if (!statusText) return;
-      statusText.innerHTML = '⏳ جاري الاتصال بخوادم Google Firebase...';
-      const ok = await window.WG_Firebase.init();
-      if (ok) {
-        statusText.innerHTML = '🟢 متصل بنجاح مع Google Firebase Firestore السحابي (Live Realtime Sync نشط)!';
-        statusText.parentElement.style.background = '#ECFDF5';
-        statusText.parentElement.style.borderColor = '#10B981';
-        statusText.parentElement.style.color = '#065F46';
-      } else {
-        statusText.innerHTML = '⚪ يعمل النظام الآن بنظام التخزين المحلي الآمن (Local Mode) وجاهز للربط مع Firebase.';
-        statusText.parentElement.style.background = '#FFFBEB';
-        statusText.parentElement.style.borderColor = '#FCD34D';
-        statusText.parentElement.style.color = '#92400E';
+      // تهيئة Supabase السحابي اللحظي
+      if (window.WG_Supabase) {
+        window.WG_Supabase.init();
       }
-    }
-
-    function saveCustomFirebaseConfig() {
-      const val = document.getElementById('firebaseConfigInput').value.trim();
-      if (!val) {
-        alert('يرجى لصق كائن إعدادات Firebase بصيغة JSON');
-        return;
-      }
-      try {
-        const parsed = JSON.parse(val);
-        localStorage.setItem('wg_firebase_config', JSON.stringify(parsed));
-        alert('تم حفظ إعدادات Firebase بنجاح! جاري إعادة تهيئة الاتصال...');
-        window.WG_Firebase.init(parsed).then(() => {
-          checkFirebaseConnectionUI();
-    // تهيئة Supabase السحابي اللحظي
-    if (window.WG_Supabase) {
-      window.WG_Supabase.init();
-    }
-        });
-      } catch (err) {
-        alert('خطأ في صيغة JSON: ' + err.message);
-      }
-    }
-
-    function resetFirebaseConfigDefault() {
-      localStorage.removeItem('wg_firebase_config');
-      document.getElementById('firebaseConfigInput').value = JSON.stringify(window.FIREBASE_DEFAULT_CONFIG, null, 2);
-      alert('تمت استعادة الإعدادات الافتراضية');
-      checkFirebaseConnectionUI();
-    }
-
-    checkFirebaseConnectionUI();
-  });
+    });
   </script>
 </body>
 </html>
