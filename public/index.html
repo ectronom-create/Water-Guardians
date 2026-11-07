@@ -2119,11 +2119,11 @@
       <div style="display: flex; flex-direction: column; gap: 14px; text-align: right;">
         <div>
           <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 5px;">اسم المستخدم:</label>
-          <input type="text" id="adminModalUser" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" value="admin" />
+          <input type="text" id="adminModalUser" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" placeholder="اسم المستخدم" autocomplete="off" />
         </div>
         <div>
           <label style="font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 5px;">كلمة المرور:</label>
-          <input type="password" id="adminModalPass" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" value="admin123" />
+          <input type="password" id="adminModalPass" class="form-control" style="background: #0F172A; color: white; border-color: #334155;" placeholder="كلمة المرور" autocomplete="new-password" />
         </div>
         <div id="adminLoginModalError" style="color: #EF4444; font-size: 0.85rem; display: none;"></div>
         <button class="btn btn-primary" onclick="submitAdminLogin()" style="margin-top: 8px;">
@@ -3405,20 +3405,40 @@
       const p = document.getElementById('adminModalPass').value.trim();
       const errBox = document.getElementById('adminLoginModalError');
 
+      if (!u || !p) {
+        errBox.textContent = 'يرجى إدخال اسم المستخدم وكلمة المرور';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      errBox.style.display = 'none';
+
+      let loginSuccess = false;
+
+      // 1. التحقق عبر خادم Node.js إذا كان قيد التشغيل
       const data = await safeApiCall('/api/admin/login', 'POST', { username: u, password: p });
       if (data && data.success) {
+        loginSuccess = true;
+      }
+
+      // 2. التحقق السحابي المباشر عبر دالة التشفير الآمنة (SHA-256)
+      if (!loginSuccess && window.WG_Supabase) {
+        try {
+          const authOk = await window.WG_Supabase.verifyAdminLogin(u, p);
+          if (authOk) loginSuccess = true;
+        } catch (e) {
+          console.warn('Admin check error:', e);
+        }
+      }
+
+      if (loginSuccess) {
         state.isAdminLoggedIn = true;
-        closeAdminLoginModal();
-        showScreen('screen-admin');
-        initAdminDashboard();
-      } else if (u === 'admin' && p === 'admin123') {
-        // تسجيل دخول محلي فوري
-        state.isAdminLoggedIn = true;
+        sessionStorage.setItem('wg_admin_auth', 'true');
         closeAdminLoginModal();
         showScreen('screen-admin');
         initAdminDashboard();
       } else {
-        errBox.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+        errBox.textContent = 'بيانات الدخول غير صحيحة! يرجى التأكد من اسم المستخدم وكلمة المرور';
         errBox.style.display = 'block';
       }
     }
@@ -3430,10 +3450,11 @@
 
     function adminLogout() {
       state.isAdminLoggedIn = false;
+      sessionStorage.removeItem('wg_admin_auth');
       safeApiCall('/api/admin/logout', 'POST');
       showScreen('screen-welcome');
       updateStepper(1);
-      alert('تم تسجيل خروج المشرف بنجاح');
+      alert('تم تسجيل خروج المشرف بنجاح وإقفال البوابة 🔒');
     }
 
     function switchAdminTab(tabKey, btn) {

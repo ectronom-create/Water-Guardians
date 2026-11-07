@@ -6,7 +6,7 @@ echo       Water Guardians - تشغيل الخادم المحلي
 echo ========================================================
 echo.
 echo  جاري تشغيل الخادم على الرابط: http://localhost:3000
-echo  لوحة الإدارة: http://localhost:3000/admin (اسم المستخدم: admin | كلمة المرور: admin123)
+echo  لوحة الإدارة: http://localhost:3000/admin (محمية بكلمة مرور المشرف الخاصة)
 echo.
 cd /d "%~dp0"
 node server.js

@@ -1156,7 +1156,7 @@ const server = app.listen(PORT, () => {
     console.log(`📱 رابط الشبكة المحلية لمشاركة الطالبات: http://${ips[0]}:${PORT}`);
   }
   console.log(`⚙️ لوحة تحكم الإدارة: http://localhost:${PORT}/admin`);
-  console.log(`🔑 بيانات المشرف: admin / admin123`);
+  console.log(`🔒 لوحة الإدارة محمية بالصلاحيات السرية`);
 });
 
 module.exports = { app, server };

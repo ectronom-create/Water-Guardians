@@ -765,7 +765,7 @@ initDatabase().then(() => {
     if (publicUrl) console.log(`🌍 الرابط العام: ${publicUrl}`);
     if (ips.length > 0) console.log(`📱 الشبكة المحلية: http://${ips[0]}:${PORT}`);
     console.log(`⚙️  لوحة الإدارة: http://localhost:${PORT}/admin`);
-    console.log(`🔑 بيانات المشرف: admin / admin123\n`);
+    console.log(`🔒 لوحة الإدارة محمية بالصلاحيات السرية\n`);
   });
   module.exports = { app, server };
 }).catch(err => {
